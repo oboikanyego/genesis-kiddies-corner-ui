@@ -10,7 +10,7 @@ import { BookingApiService } from './core/booking-api.service';
   template: `
     <ion-app>
       <div #scrollHost class="site-scroll" role="region" aria-label="Page content" tabindex="0">
-        <div class="app-frame">
+        <div class="app-frame" [class.admin-shell]="router.url.startsWith('/admin')">
         <header class="site-header">
           <a routerLink="/" class="brand" aria-label="Genesis Kiddies Corner home">
             <span class="brand-crown">👑</span><span class="brand-title"><b>The <em>Genesis</em></b><small>Kiddies Corner</small></span>
@@ -27,7 +27,7 @@ import { BookingApiService } from './core/booking-api.service';
         <footer class="site-footer"><div class="container footer-inner"><div><strong>🎈 The Genesis Kiddies Corner</strong><p>Making every event extra special.</p></div><div><a routerLink="/services">Our Services</a><a routerLink="/my-bookings">Track a booking</a><a routerLink="/admin">Admin</a></div></div><div class="footer-copy">© 2026 The Genesis Kiddies Corner • Made with love for little celebrations</div></footer>
         </div>
       </div>
-      <nav class="mobile-nav" aria-label="Mobile navigation">
+      <nav class="mobile-nav" [class.admin-route-hidden]="router.url.startsWith('/admin')" aria-label="Mobile navigation">
           <a routerLink="/" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="selected"><span>⌂</span>Home</a>
           <a routerLink="/services" routerLinkActive="selected"><span>♧</span>Services</a>
           <a routerLink="/cart" routerLinkActive="selected"><span>▣</span>Cart @if (api.cart().length) { <i>{{api.cart().length}}</i> }</a>

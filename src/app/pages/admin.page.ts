@@ -7,7 +7,21 @@ import { Booking, BookingStatus, ServiceItem } from '../core/models';
 @if(!loggedIn()){
 <div class="admin-login-wrap"><form class="surface-card admin-login" (ngSubmit)="login()"><div class="admin-login-icon">🔐</div><div class="eyebrow pink-text">OWNER'S SPACE</div><h1>Welcome back!</h1><p>Sign in to manage requests for The Genesis Kiddies Corner.</p><label class="form-field"><span>Admin email</span><input name="email" [(ngModel)]="email" type="email" required placeholder="owner@example.com"/></label><label class="form-field"><span>Password</span><input name="password" [(ngModel)]="password" type="password" required placeholder="Your password"/></label>@if(error()){<div class="notice error" role="alert">{{error()}}</div>}<button class="btn btn-pink btn-full" [disabled]="busy()">{{busy()?'Signing in...':'Sign in →'}}</button></form></div>
 }@else{
-<div class="admin-layout"><aside class="admin-sidebar"><div class="admin-sidebar-heading">OWNER DASHBOARD</div><button [class.selected]="tab()==='overview'" (click)="tab.set('overview');load()">▦ <span>Overview</span></button><button [class.selected]="tab()==='bookings'" (click)="tab.set('bookings');load()">▤ <span>Bookings</span></button><button [class.selected]="tab()==='calendar'" (click)="tab.set('calendar');load()">▦ <span>Calendar</span></button><button [class.selected]="tab()==='services'" (click)="tab.set('services');load()">🎈 <span>Manage services</span></button><button class="admin-logout" (click)="logout()">↪ <span>Sign out</span></button></aside>
+<div class="admin-layout">
+  <aside class="admin-sidebar" aria-label="Owner dashboard">
+    <div class="admin-sidebar-heading">OWNER DASHBOARD</div>
+    <div class="admin-mobile-heading">
+      <div><span class="admin-mobile-eyebrow">OWNER WORKSPACE</span><strong>Manage your events</strong></div>
+      <button type="button" class="admin-mobile-logout" (click)="logout()" aria-label="Sign out of admin dashboard">Sign out <span aria-hidden="true">↗</span></button>
+    </div>
+    <nav class="admin-tab-list" aria-label="Admin sections">
+      <button type="button" class="admin-tab" [class.selected]="tab()==='overview'" [attr.aria-current]="tab()==='overview' ? 'page' : null" (click)="tab.set('overview');load()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.4"/><rect x="14" y="3" width="7" height="7" rx="1.4"/><rect x="3" y="14" width="7" height="7" rx="1.4"/><rect x="14" y="14" width="7" height="7" rx="1.4"/></svg><span>Overview</span></button>
+      <button type="button" class="admin-tab" [class.selected]="tab()==='bookings'" [attr.aria-current]="tab()==='bookings' ? 'page' : null" (click)="tab.set('bookings');load()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4.5h11a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z"/><path d="M10 10h7M10 14h7M3 8v12"/></svg><span>Bookings</span></button>
+      <button type="button" class="admin-tab" [class.selected]="tab()==='calendar'" [attr.aria-current]="tab()==='calendar' ? 'page' : null" (click)="tab.set('calendar');load()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 15h3v3H8z"/></svg><span>Calendar</span></button>
+      <button type="button" class="admin-tab" [class.selected]="tab()==='services'" [attr.aria-current]="tab()==='services' ? 'page' : null" (click)="tab.set('services');load()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h16v10H4zM2 8h20v3H2zM12 8V20M12 8C5 8 5 2 9 2c2.5 0 3 3 3 6ZM12 8c7 0 7-6 3-6-2.5 0-3 3-3 6Z"/></svg><span>Services</span></button>
+    </nav>
+    <button type="button" class="admin-logout" (click)="logout()"><span aria-hidden="true">↪</span> Sign out</button>
+  </aside>
 <div class="admin-main"><div class="admin-topline"><div><small>THE GENESIS KIDDIES CORNER</small><h1>{{tab()==='overview'?'Dashboard':tab()==='bookings'?'Booking requests':tab()==='calendar'?'Event calendar':'Service management'}}</h1><p>Keep the smiles coming — one event at a time.</p></div><button class="btn btn-outline" (click)="load()">↻ Refresh</button></div>
 @if(error()){<div class="notice error" role="alert">{{error()}}</div>}
 @if(message()){<div class="notice success" role="status">{{message()}}</div>}
@@ -26,9 +40,23 @@ import { Booking, BookingStatus, ServiceItem } from '../core/models';
   </div>
 }
 @if(tab()==='calendar'){
-  <section class="surface-card calendar-panel"><div class="panel-header"><div><h2>Upcoming events</h2><p>Confirmed bookings, sorted by event date</p></div></div>
-  @for(b of calendarBookings(); track b._id){<article class="calendar-row"><div class="calendar-date"><strong>{{b.event.date.slice(8,10)}}</strong><span>{{monthLabel(b.event.date)}}</span></div><div class="calendar-event"><strong>{{b.event.type}} · {{b.customer?.name}}</strong><small>{{b.event.startTime}}–{{b.event.endTime}} · {{b.event.location}}</small><small>@for(i of b.items; track i.serviceId){ {{i.quantity}}× {{i.name}} · }</small></div><span class="status-chip confirmed">Confirmed</span></article>}
-  @if(!calendarBookings().length){<p class="empty-admin">No confirmed events in the current page. Check bookings for more.</p>}
+  <section class="surface-card calendar-panel" aria-label="Upcoming confirmed events">
+    <div class="panel-header calendar-heading"><div><span class="calendar-kicker">YOUR SCHEDULE</span><h2>Upcoming events</h2><p>Confirmed bookings, sorted by event date</p></div><span class="calendar-count">{{calendarBookings().length}} shown</span></div>
+    @for(b of calendarBookings(); track b._id){
+      <article class="calendar-row">
+        <div class="calendar-date"><strong>{{b.event.date.slice(8,10)}}</strong><span>{{monthLabel(b.event.date)}}</span></div>
+        <div class="calendar-event"><strong>{{b.event.type}}</strong><small>{{b.customer?.name}}</small><small>{{b.event.startTime}}–{{b.event.endTime}} · {{b.event.location}}</small><small>@for(i of b.items; track i.serviceId){ {{i.quantity}}× {{i.name}} · }</small></div>
+        <span class="status-chip confirmed">Confirmed</span>
+      </article>
+    }
+    @if(!calendarBookings().length){
+      <div class="calendar-empty">
+        <div class="calendar-empty-art" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 15h3v3H8z"/></svg></div>
+        <h3>No confirmed events yet</h3>
+        <p>Once you approve an event booking, it will appear here. Check your requests to see what needs attention.</p>
+        <button type="button" class="btn btn-pink" (click)="tab.set('bookings');load()">View booking requests <span aria-hidden="true">→</span></button>
+      </div>
+    }
   </section>
 }
 @if(tab()==='services'){

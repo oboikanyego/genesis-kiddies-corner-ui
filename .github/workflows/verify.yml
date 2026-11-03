@@ -13,6 +13,7 @@ jobs:
       - run: npm install
       - run: npm run test:env
       - run: npm run test:scroll
+      - run: npm run test:admin-mobile
       - run: npm run build
         env:
           API_URL: https://example.invalid/api
