@@ -113,88 +113,33 @@ ion-app > .site-scroll {
   .admin-topline > .btn { padding-inline: 7px; }
 }
 
-/* Manage services: native date picker with multiple removable blocked dates. */
-.manage-fields .blocked-date-editor {
-  grid-column: 1 / -1;
-  min-width: 0;
-  margin-top: 3px;
-  padding: 15px;
-  background: #fafaff;
-  border: 1px solid #e8eaf7;
-  border-radius: 14px;
-}
-.blocked-date-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-.blocked-date-heading label { font-size: 11px; color: #46516d; font-weight: 900; }
-.blocked-date-counter { font-size: 10px; font-weight: 800; color: #727b96; background: #edeeff; border-radius: 30px; padding: 5px 10px; }
-.blocked-date-controls { display: flex; gap: 9px; align-items: stretch; min-width: 0; }
-.blocked-date-picker {
-  appearance: auto;
-  display: block;
-  min-width: 0;
-  width: 100%;
-  max-width: 280px;
-  flex: 1 1 180px;
-  min-height: 44px;
-  background: #fff;
-  color: #242f50;
-  border: 1px solid #dce2f0;
-  border-radius: 10px;
-  padding: 9px 12px;
-  font: inherit;
-  font-size: 13px;
-  color-scheme: light;
-}
-.blocked-date-picker:focus-visible { outline: 2px solid #6a5af2; outline-offset: 2px; }
-.blocked-date-add {
-  flex: none;
-  border: none;
-  border-radius: 10px;
-  background: #6057e9;
-  color: #fff;
-  font-weight: 850;
-  font-size: 12px;
-  padding: 9px 16px;
-  min-height: 44px;
-}
-.blocked-date-add:disabled { opacity: .5; cursor: not-allowed; }
-.blocked-date-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 13px 0 7px; }
-.blocked-date-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: #fff;
-  border: 1px solid #e1dafd;
-  border-radius: 999px;
-  padding: 4px 6px 4px 12px;
-  color: #4f448a;
-  font-size: 11px;
-  font-weight: 800;
-}
-.blocked-date-chip button {
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  background: #f4edff;
-  color: #6f56a5;
-  font-size: 17px;
-  line-height: 1;
-  width: 25px;
-  height: 25px;
-  padding: 0;
-}
-.blocked-date-chip button:hover { background: #fbe4f0; color: #c72c70; }
-.blocked-date-chip button:focus-visible, .blocked-date-add:focus-visible { outline: 2px solid #6a5af2; outline-offset: 2px; }
-.blocked-date-empty { color: #8289a1; font-size: 11px; margin-top: 11px; }
-.blocked-date-help { display: block; margin-top: 10px; color: #747f97; font-size: 10px; line-height: 1.6; }
-.blocked-date-help strong { color: #494e74; }
-@media (max-width: 720px) {
-  .manage-fields .blocked-date-editor { padding: 12px; }
-  .blocked-date-controls { gap: 7px; }
-  .blocked-date-picker { max-width: none; min-width: 0; font-size: 12px; padding-inline: 8px; }
-  .blocked-date-add { padding-inline: 12px; font-size: 11px; }
-}
-@media (max-width: 355px) {
-  .blocked-date-controls { flex-direction: column; }
-  .blocked-date-add { width: 100%; }
-}
+/* Manage services: calendar button and Ionic disabled-date picker. */
+.manage-fields .blocked-date-editor { grid-column:1/-1; min-width:0; margin-top:3px; padding:15px; background:#fafaff; border:1px solid #e8eaf7; border-radius:14px; }
+.blocked-date-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:11px; }
+.blocked-date-label { font-size:11px; font-weight:900; color:#46516d; }
+.blocked-date-counter { font-size:10px; font-weight:800; color:#727b96; background:#edeeff; border-radius:30px; padding:5px 10px; }
+.blocked-date-trigger { display:flex; align-items:center; gap:11px; width:100%; min-height:48px; padding:10px 14px; border:1px solid #dce2f0; background:#fff; border-radius:11px; color:#342c83; font:inherit; font-size:13px; font-weight:850; text-align:left; cursor:pointer; }
+.blocked-date-trigger svg { width:22px; height:22px; flex:none; color:#6455e7; }
+.blocked-date-trigger-chevron { margin-left:auto; font-size:25px; line-height:1; color:#9298b2; }
+.blocked-date-trigger:disabled { opacity:.5; cursor:not-allowed; }
+.blocked-date-chips { display:flex; flex-wrap:wrap; gap:8px; margin:13px 0 7px; }
+.blocked-date-chip { display:inline-flex; align-items:center; gap:7px; background:#fff; border:1px solid #e1dafd; border-radius:999px; padding:4px 6px 4px 12px; color:#4f448a; font-size:11px; font-weight:800; }
+.blocked-date-chip button { display:grid; place-items:center; border:0; border-radius:50%; background:#f4edff; color:#6f56a5; font-size:17px; line-height:1; width:25px; height:25px; padding:0; cursor:pointer; }
+.blocked-date-chip button:hover { background:#fbe4f0; color:#c72c70; }
+.blocked-date-empty { color:#8289a1; font-size:11px; margin-top:11px; }
+.blocked-date-help { display:block; margin-top:10px; color:#747f97; font-size:10px; line-height:1.6; }
+.blocked-date-help strong { color:#494e74; }
+.blocked-date-trigger:focus-visible,.blocked-date-chip button:focus-visible,.blocked-date-modal-close:focus-visible,.blocked-date-modal-done:focus-visible { outline:2px solid #6a5af2; outline-offset:2px; }
+
+ion-modal.blocked-date-calendar-modal { --width:min(410px,calc(100vw - 24px)); --height:auto; --max-height:min(92dvh,630px); --border-radius:23px; --box-shadow:0 25px 90px rgba(20,25,70,.23); }
+.blocked-date-modal-content { padding:20px 18px 17px; width:100%; max-height:92dvh; overflow-y:auto; background:#fff; }
+.blocked-date-modal-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:6px; }
+.blocked-date-modal-kicker { color:#ec3173; font-size:10px; font-weight:900; letter-spacing:.12em; }
+.blocked-date-modal-header h2 { margin:5px 0; font-size:22px; }
+.blocked-date-modal-header p { margin:0; font-size:11px; line-height:1.5; }
+.blocked-date-modal-close { display:grid; place-items:center; flex:none; width:36px; height:36px; border:0; border-radius:11px; font-size:25px; background:#f4f4fb; color:#4f5770; cursor:pointer; }
+ion-datetime.blocked-date-calendar { --background:#fff; --background-rgb:255,255,255; --ion-color-primary:#6455e7; max-width:100%; margin-inline:auto; }
+ion-datetime.blocked-date-calendar::part(calendar-day disabled) { opacity:.35; text-decoration:line-through; }
+.blocked-date-modal-hint { font-size:11px; color:#6c7590; line-height:1.5; margin:7px 0 15px; }
+.blocked-date-modal-done { width:100%; min-height:44px; border:1px solid #e6e7f2; border-radius:11px; background:#f7f7fc; color:#3b4160; font-weight:850; font-size:13px; cursor:pointer; }
+@media(max-width:720px) { .manage-fields .blocked-date-editor { padding:12px; } .blocked-date-modal-content { padding:16px 12px 14px; } .blocked-date-modal-header h2 { font-size:19px; } }
