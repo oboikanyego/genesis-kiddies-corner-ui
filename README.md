@@ -42,3 +42,12 @@ All seven service illustrations are original SVG graphics in `src/assets/illustr
 
 ## Scope
 MVP deliberately excludes online payments, customer sign-ups, messaging, analytics, invoicing and unnecessary integrations. Admin is a single owner account configured by environment variables.
+
+## Scrolling and page layout
+
+Ionic's base stylesheet fixes the document body. The application therefore uses an
+explicit `.site-scroll` viewport-sized native scrolling container inside `ion-app`.
+The bottom mobile navigation is a sibling outside that container. Route transitions
+reset the scroll host to the top, including the service detail page at
+`/services/jumping-castles`. Check scrolling with both a mouse wheel and touch gestures
+on mobile; `npm run test:scroll` protects the required DOM and CSS invariants.

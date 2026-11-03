@@ -1,6 +1,6 @@
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, ViewChild } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { IonContent, IonicModule } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BookingApiService } from './core/booking-api.service';
@@ -9,7 +9,7 @@ import { BookingApiService } from './core/booking-api.service';
   imports: [IonicModule, RouterOutlet, RouterLink, RouterLinkActive],
   template: `
     <ion-app>
-      <ion-content class="site-scroll" [scrollY]="true">
+      <div #scrollHost class="site-scroll" role="region" aria-label="Page content" tabindex="0">
         <div class="app-frame">
         <header class="site-header">
           <a routerLink="/" class="brand" aria-label="Genesis Kiddies Corner home">
@@ -26,7 +26,7 @@ import { BookingApiService } from './core/booking-api.service';
         <main class="main-content"><router-outlet></router-outlet></main>
         <footer class="site-footer"><div class="container footer-inner"><div><strong>🎈 The Genesis Kiddies Corner</strong><p>Making every event extra special.</p></div><div><a routerLink="/services">Our Services</a><a routerLink="/my-bookings">Track a booking</a><a routerLink="/admin">Admin</a></div></div><div class="footer-copy">© 2026 The Genesis Kiddies Corner • Made with love for little celebrations</div></footer>
         </div>
-      </ion-content>
+      </div>
       <nav class="mobile-nav" aria-label="Mobile navigation">
           <a routerLink="/" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="selected"><span>⌂</span>Home</a>
           <a routerLink="/services" routerLinkActive="selected"><span>♧</span>Services</a>
@@ -37,17 +37,17 @@ import { BookingApiService } from './core/booking-api.service';
   `
 })
 export class AppComponent {
-  @ViewChild(IonContent) private content?: IonContent;
+  @ViewChild("scrollHost") private scrollHost?: ElementRef<HTMLDivElement>;
   api=inject(BookingApiService);
   router=inject(Router);
 
   constructor() {
-    // ion-content owns the scroll position, so Angular's native window scroll reset is insufficient.
+    // Our dedicated app scroller owns scroll position because Ionic fixes document/body.
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
       takeUntilDestroyed()
     ).subscribe(() => {
-      void this.content?.scrollToTop(0);
+      this.scrollHost?.nativeElement.scrollTo(0, 0);
     });
   }
 }

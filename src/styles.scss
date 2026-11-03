@@ -22,5 +22,23 @@
 /* Owner calendar */
 .calendar-panel{padding:25px}.calendar-row{display:flex;align-items:center;gap:18px;border-top:1px solid #edf0f6;padding:17px 0}.calendar-date{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#eef4ff;border-radius:13px;width:61px;height:63px;color:#353e91}.calendar-date strong{font-size:22px;line-height:1}.calendar-date span{font-size:11px;text-transform:uppercase;margin-top:4px}.calendar-event{flex:1}.calendar-event strong,.calendar-event small{display:block}.calendar-event strong{font-size:13px}.calendar-event small{font-size:11px;color:#818ba0;margin-top:5px}.calendar-panel .status-chip{white-space:nowrap}@media(max-width:720px){.calendar-panel{padding:15px}.calendar-row{gap:10px}.calendar-date{width:51px;height:56px}.calendar-event strong{font-size:11px}.calendar-event small{font-size:10px}}
 
-/* Ionic app shell: ion-app suppresses document scrolling. ion-content is the scroll host. */
-.site-scroll { --background: #fff; }
+/* Ionic fixes the body to the viewport. Make a native, explicitly sized scroll area.
+   This works with Angular RouterOutlet and long async-loaded detail pages, without
+   relying on ion-content's ion-page/ion-router-outlet height calculation. */
+ion-app > .site-scroll {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
+  background: #fff;
+}
+@media (max-width: 720px) {
+  ion-app > .site-scroll { scroll-padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+}
