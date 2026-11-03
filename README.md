@@ -20,11 +20,15 @@ Responsive **desktop + mobile customer booking website and owner dashboard**, ma
 5. Admin area: `/admin`. The credentials are `ADMIN_EMAIL` and `ADMIN_PASSWORD` configured on the backend. They are never hardcoded in frontend.
 
 ## Netlify deployment
-1. Set the real Render backend address in `src/environments/environment.production.ts`: `https://YOUR-RENDER-SERVICE.onrender.com/api`.
-2. Commit that change, then connect this repo to Netlify.
-3. Build command: `npm run build`; publish directory: `dist/genesis-kiddies-corner-ui/browser`.
-4. Add your exact Netlify URL to API `CORS_ORIGINS` (comma-separated if multiple origins).
-5. `netlify.toml` includes SPA fallback navigation. Deploy to Netlify Free within its usage limits.
+1. Connect this GitHub repository to the existing Netlify site with branch `main`.
+2. In Netlify → **Environment variables**, set **`API_URL`** to your Render backend URL (e.g. `https://genesis-kiddies-corner-api.onrender.com/api`), with Build scope. `NG_APP_API_URL` also works as a fallback; `API_URL` wins if both exist.
+3. Build command: `npm run build`; publish directory: `dist/genesis-kiddies-corner-ui/browser` (configured in `netlify.toml`).
+4. `prebuild` validates the variable and generates `src/environments/generated-environment.production.ts` at build time. The generated file is gitignored; the backend address is no longer hardcoded into the Angular production source.
+5. Update the API's `CORS_ORIGINS` to include the exact Netlify domain.
+6. **Redeploy after changing API_URL**, because Angular bundles this public value into static JavaScript. Do not put secrets in frontend environment variables.
+
+For a local production build: `API_URL=https://your-backend.onrender.com/api npm run build`. Local `npm start` continues to use `http://localhost:10000/api` from `environment.ts`.
+Run `npm run test:env` to test the configuration generator.
 
 ## How booking works
 - The user can browse services and add several choices to the cart, then submit one booking request.

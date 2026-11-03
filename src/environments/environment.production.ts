@@ -1,1 +1,6 @@
-export const environment = { production: true, apiUrl: 'https://genesis-kiddies-corner-api.onrender.com/api' };
+import { productionApiUrl } from './generated-environment.production';
+
+export const environment = {
+  production: true,
+  apiUrl: productionApiUrl
+};

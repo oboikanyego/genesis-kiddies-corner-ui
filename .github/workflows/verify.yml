@@ -11,4 +11,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm install
+      - run: npm run test:env
       - run: npm run build
+        env:
+          API_URL: https://example.invalid/api
