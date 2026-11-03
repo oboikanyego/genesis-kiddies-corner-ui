@@ -1,9 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { IonicModule } from '@ionic/angular';
 import { BookingApiService } from '../core/booking-api.service';
 import { Booking, BookingStatus, ServiceItem } from '../core/models';
-@Component({selector:'app-admin',standalone:true,imports:[FormsModule,DatePipe],template:`
+@Component({selector:'app-admin',standalone:true,imports:[FormsModule,DatePipe,IonicModule],template:`
 @if(!loggedIn()){
 <div class="admin-login-wrap"><form class="surface-card admin-login" (ngSubmit)="login()"><div class="admin-login-icon">🔐</div><div class="eyebrow pink-text">OWNER'S SPACE</div><h1>Welcome back!</h1><p>Sign in to manage requests for The Genesis Kiddies Corner.</p><label class="form-field"><span>Admin email</span><input name="email" [(ngModel)]="email" type="email" required placeholder="owner@example.com"/></label><label class="form-field"><span>Password</span><input name="password" [(ngModel)]="password" type="password" required placeholder="Your password"/></label>@if(error()){<div class="notice error" role="alert">{{error()}}</div>}<button class="btn btn-pink btn-full" [disabled]="busy()">{{busy()?'Signing in...':'Sign in →'}}</button></form></div>
 }@else{
@@ -62,23 +63,35 @@ import { Booking, BookingStatus, ServiceItem } from '../core/models';
 @if(tab()==='services'){
 <div class="admin-services"><div class="admin-services-intro"><h2>Available services</h2><p>Control stock, pricing, availability and whether an item appears in the customer catalogue. Prices are optional.</p></div>
 @for(item of services();track item._id){<article class="surface-card manage-service"><img [src]="item.image" [alt]="item.name"/><div class="manage-content"><div class="manage-title"><h3>{{item.name}}</h3><span class="category-tag">{{item.category}}</span></div><div class="manage-fields"><label><span>Price (R)</span><input type="number" min="0" [ngModel]="item.price" (ngModelChange)="item.price=$event===null||$event===''?null:+$event" placeholder="On request"/></label><label><span>Available stock</span><input type="number" min="1" [(ngModel)]="item.stock"/></label><div class="blocked-date-editor">
-  <div class="blocked-date-heading"><label [for]="'blocked-date-'+item._id">Blocked dates</label><span class="blocked-date-counter">{{item.blockedDates.length}} / 100</span></div>
-  <div class="blocked-date-controls">
-    <input class="blocked-date-picker" type="date" [id]="'blocked-date-'+item._id" [ngModel]="blockedDateDrafts[item._id] || ''" (ngModelChange)="blockedDateDrafts[item._id] = $event" [attr.aria-label]="'Choose a date to block for ' + item.name" />
-    <button class="blocked-date-add" type="button" (click)="addBlockedDate(item)" [disabled]="!blockedDateDrafts[item._id] || item.blockedDates.length >= 100">+ Add date</button>
-  </div>
+  <div class="blocked-date-heading"><span class="blocked-date-label">Blocked dates</span><span class="blocked-date-counter">{{item.blockedDates.length}} / 100</span></div>
+  <button type="button" class="blocked-date-trigger" (click)="openBlockedDateCalendar(item)" [disabled]="item.blockedDates.length >= 100" [attr.aria-label]="'Open blocked dates calendar for ' + item.name">
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
+    <span>Choose blocked dates</span><span class="blocked-date-trigger-chevron" aria-hidden="true">›</span>
+  </button>
   @if(item.blockedDates.length){
     <div class="blocked-date-chips" aria-label="Currently blocked dates">
       @for(blockedDate of item.blockedDates; track blockedDate){
         <span class="blocked-date-chip"><span>{{formatBlockedDate(blockedDate)}}</span><button type="button" (click)="removeBlockedDate(item,blockedDate)" [attr.aria-label]="'Remove blocked date ' + formatBlockedDate(blockedDate) + ' for ' + item.name" title="Remove blocked date">×</button></span>
       }
     </div>
-  } @else {
-    <div class="blocked-date-empty">No dates blocked for this service.</div>
-  }
-  <small class="blocked-date-help">Choose dates from the calendar, add each date, then select <strong>Save changes</strong> to apply them.</small>
+  } @else {<div class="blocked-date-empty">No dates blocked for this service.</div>}
+  <small class="blocked-date-help">Tap the calendar icon to select a day. Past and already blocked dates are disabled. Press <strong>Save changes</strong> to apply.</small>
 </div></div><div class="manage-bottom"><label class="toggle-label"><input type="checkbox" [(ngModel)]="item.active"/> Show service to customers</label><button class="btn btn-pink" (click)="saveService(item)" [disabled]="busy()">Save changes →</button></div></div></article>}
 </div>
+  <ion-modal class="blocked-date-calendar-modal" [isOpen]="!!activeBlockedService()" (didDismiss)="closeBlockedDateCalendar()">
+    <ng-template>
+      <div class="blocked-date-modal-content">
+        <div class="blocked-date-modal-header">
+          <div><span class="blocked-date-modal-kicker">BLOCK DATES</span><h2>{{activeBlockedService()?.name}}</h2><p>Choose a date to make this service unavailable.</p></div>
+          <button class="blocked-date-modal-close" type="button" (click)="closeBlockedDateCalendar()" aria-label="Close calendar">×</button>
+        </div>
+        <ion-datetime class="blocked-date-calendar" presentation="date" locale="en-ZA" [min]="todayIsoLocal()" [isDateEnabled]="isBlockedDateEnabled" [showDefaultButtons]="false" (ionChange)="onBlockedDatePicked($event.detail.value)"></ion-datetime>
+        <p class="blocked-date-modal-hint">Grey days cannot be selected (past or already blocked).</p>
+        <button class="blocked-date-modal-done" type="button" (click)="closeBlockedDateCalendar()">Done</button>
+      </div>
+    </ng-template>
+  </ion-modal>
+
 }
 </div></div>
 }`})
@@ -94,16 +107,37 @@ export class AdminPage {
   loadBookings(){this.api.adminBookings(this.filter||undefined,this.page()).subscribe({next:r=>{this.bookings.set(r.items);this.pages.set(r.pages);},error:e=>this.handleError(e)});}
   setStatus(b:Booking,status:BookingStatus){this.busy.set(true);this.error.set('');this.api.adminUpdate(b._id,status).subscribe({next:()=>{this.busy.set(false);this.message.set(`${b.reference} marked ${status}.`);this.loadBookings();},error:e=>{this.busy.set(false);this.handleError(e);}});}
   monthLabel(date:string):string {return new Date(`${date}T12:00:00`).toLocaleDateString('en-ZA',{month:'short'});}
-  blockedDateDrafts: Record<string,string> = {};
+  activeBlockedService = signal<ServiceItem | null>(null);
 
-  addBlockedDate(item: ServiceItem): void {
-    const date = (this.blockedDateDrafts[item._id] || '').trim();
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date + 'T12:00:00'))) {
-      this.error.set('Choose a valid date from the calendar.');
+  todayIsoLocal(): string {
+    const now = new Date();
+    return [now.getFullYear(), String(now.getMonth() + 1).padStart(2,'0'), String(now.getDate()).padStart(2,'0')].join('-');
+  }
+
+  isBlockedDateEnabled = (isoDate: string): boolean => {
+    const item = this.activeBlockedService();
+    const day = isoDate.slice(0,10);
+    return !!item && day >= this.todayIsoLocal() && !item.blockedDates.includes(day);
+  };
+
+  openBlockedDateCalendar(item: ServiceItem): void {
+    if (item.blockedDates.length >= 100) {
+      this.error.set('You can block up to 100 dates per service.');
       return;
     }
-    if (item.blockedDates.includes(date)) {
-      this.blockedDateDrafts[item._id] = '';
+    this.activeBlockedService.set(item);
+  }
+
+  closeBlockedDateCalendar(): void {
+    this.activeBlockedService.set(null);
+  }
+
+  onBlockedDatePicked(value: string | string[] | null | undefined): void {
+    const item = this.activeBlockedService();
+    const date = typeof value === 'string' ? value.slice(0,10) : '';
+    if (!item || !date) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !this.isBlockedDateEnabled(date)) {
+      this.error.set('Select a future date that has not already been blocked.');
       return;
     }
     if (item.blockedDates.length >= 100) {
@@ -111,8 +145,8 @@ export class AdminPage {
       return;
     }
     item.blockedDates = [...item.blockedDates, date].sort();
-    this.blockedDateDrafts[item._id] = '';
     this.error.set('');
+    this.closeBlockedDateCalendar();
   }
 
   removeBlockedDate(item: ServiceItem, date: string): void {
