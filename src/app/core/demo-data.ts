@@ -1,4 +1,5 @@
 import { ServiceItem } from './models';
+import { servicePhotoFor } from './service-photos';
 // Display-only fallback when the API is offline. Booking submission still requires the API.
 const defs: [string,string,string,string,string,('rental'|'staffed'|'stall')[]][] = [
   ['mascot-characters','Mascot Characters','Playful character visits, dancing and photo moments.','Entertainment','mascot',['staffed']],
@@ -9,4 +10,4 @@ const defs: [string,string,string,string,string,('rental'|'staffed'|'stall')[]][
   ['candy-floss-machine','Candy Floss Machine','Fluffy clouds of sugar in your favourite colours.','Treats','candy-floss',['rental','staffed','stall']],
   ['face-painting','Face Painting','Beautiful face painting to bring imaginations to life.','Entertainment','face-paint',['staffed']]
 ];
-export const DEMO_SERVICES: ServiceItem[] = defs.map(([slug,name,description,category,img,modes],i)=>({ _id: `demo-${i}`, slug, name, description, category, image: `/assets/illustrations/${img}.svg`, price:null, unit:'event', modes, stock:1, active:true, featured:true, blockedDates:[], includes: ['Fun for special occasions','Suitable for school and community events','Professional event arrangements'] }));
+export const DEMO_SERVICES: ServiceItem[] = defs.map(([slug,name,description,category,img,modes],i)=>({ _id: `demo-${i}`, slug, name, description, category, image: servicePhotoFor({slug, image: `/assets/illustrations/${img}.svg`}), price:null, unit:'event', modes, stock:1, active:true, featured:true, blockedDates:[], includes: ['Fun for special occasions','Suitable for school and community events','Professional event arrangements'] }));

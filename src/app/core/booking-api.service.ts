@@ -4,6 +4,7 @@ import { BehaviorSubject, catchError, map, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Booking, BookingPage, BookingRequest, BookingStatus, CartItem, ServiceItem } from './models';
 import { DEMO_SERVICES } from './demo-data';
+import { servicePhotoFor } from './service-photos';
 @Injectable({ providedIn: 'root' })
 export class BookingApiService {
   private http = inject(HttpClient);
@@ -13,11 +14,12 @@ export class BookingApiService {
   cart = signal<CartItem[]>(this.cartSubject.value);
   catalogOffline = signal(false);
   services$ = this.http.get<ServiceItem[]>(`${this.url}/services`).pipe(
+    map(items => items.map(item => ({ ...item, image: servicePhotoFor(item) }))),
     tap(() => this.catalogOffline.set(false)),
     catchError(() => { this.catalogOffline.set(true); return of(DEMO_SERVICES); })
   );
   private restoreCart(): CartItem[] {
-    try { const arr = JSON.parse(localStorage.getItem('gkc_cart') || '[]'); return Array.isArray(arr) ? arr.filter((i: CartItem)=>i?.service?.slug && i.quantity>0) : []; } catch { return []; }
+    try { const arr = JSON.parse(localStorage.getItem('gkc_cart') || '[]'); return Array.isArray(arr) ? arr.filter((i: CartItem)=>i?.service?.slug && i.quantity>0).map((i: CartItem) => ({...i, service: {...i.service, image: servicePhotoFor(i.service)}})) : []; } catch { return []; }
   }
   private updateCart(items: CartItem[]) { this.cartSubject.next(items); this.cart.set(items); localStorage.setItem('gkc_cart',JSON.stringify(items)); }
   add(service: ServiceItem, mode = service.modes[0], quantity = 1): void {

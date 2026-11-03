@@ -15,6 +15,7 @@ jobs:
       - run: npm run test:scroll
       - run: npm run test:admin-mobile
       - run: npm run test:blocked-dates
+      - run: npm run test:photos
       - run: npm run build
         env:
           API_URL: https://example.invalid/api
