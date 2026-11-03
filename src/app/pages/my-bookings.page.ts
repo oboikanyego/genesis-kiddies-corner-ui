@@ -83,9 +83,12 @@ export class MyBookingsPage {
   }
   toggle(reference:string){this.open.set(this.open()===reference?null:reference);}
   forget(reference:string){this.api.forgetBooking(reference);this.bookings.set(this.bookings().filter(b=>b.reference!==reference));this.open.set(null);}
-  /** Asks the API for the latest status of every saved booking; what is already saved is shown straight away. */
+  /**
+   * Asks the API for the latest status of the saved bookings that can still change; what is already saved is shown straight away.
+   * Finished or cancelled bookings keep their saved copy, and at most 10 are checked at once (the API limits how many requests one visitor can make).
+   */
   private refresh(){
-    const saved=this.api.saved();
+    const saved=this.api.saved().filter(s=>!s.snapshot||s.snapshot.status==='pending'||s.snapshot.status==='confirmed').slice(0,10);
     if(!saved.length)return;
     this.loading.set(true);
     forkJoin(saved.map(s=>this.api.track(s.reference,s.email).pipe(catchError(()=>of(null))))).subscribe(results=>{
