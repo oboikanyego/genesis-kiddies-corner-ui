@@ -10,7 +10,7 @@ test('admin navigation exposes labels and accessible mobile tabs', () => {
   assert.match(admin, /class="admin-mobile-heading"/);
   assert.match(admin, /class="admin-tab-list"/);
   for (const label of ['Overview','Bookings','Calendar','Services']) {
-    assert.match(admin, new RegExp('>'+label+'<\\\\/span>'));
+    assert.ok(admin.includes('>'+label+'</span>'), `Missing admin tab: ${label}`);
   }
   assert.match(admin, /\[attr\.aria-current\]/);
 });
