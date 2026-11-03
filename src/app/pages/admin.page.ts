@@ -61,7 +61,23 @@ import { Booking, BookingStatus, ServiceItem } from '../core/models';
 }
 @if(tab()==='services'){
 <div class="admin-services"><div class="admin-services-intro"><h2>Available services</h2><p>Control stock, pricing, availability and whether an item appears in the customer catalogue. Prices are optional.</p></div>
-@for(item of services();track item._id){<article class="surface-card manage-service"><img [src]="item.image" [alt]="item.name"/><div class="manage-content"><div class="manage-title"><h3>{{item.name}}</h3><span class="category-tag">{{item.category}}</span></div><div class="manage-fields"><label><span>Price (R)</span><input type="number" min="0" [ngModel]="item.price" (ngModelChange)="item.price=$event===null||$event===''?null:+$event" placeholder="On request"/></label><label><span>Available stock</span><input type="number" min="1" [(ngModel)]="item.stock"/></label><label><span>Blocked dates (comma separated)</span><input [ngModel]="item.blockedDates.join(', ')" (ngModelChange)="item.blockedDates=parseDates($event)" placeholder="YYYY-MM-DD, YYYY-MM-DD"/></label></div><div class="manage-bottom"><label class="toggle-label"><input type="checkbox" [(ngModel)]="item.active"/> Show service to customers</label><button class="btn btn-pink" (click)="saveService(item)" [disabled]="busy()">Save changes →</button></div></div></article>}
+@for(item of services();track item._id){<article class="surface-card manage-service"><img [src]="item.image" [alt]="item.name"/><div class="manage-content"><div class="manage-title"><h3>{{item.name}}</h3><span class="category-tag">{{item.category}}</span></div><div class="manage-fields"><label><span>Price (R)</span><input type="number" min="0" [ngModel]="item.price" (ngModelChange)="item.price=$event===null||$event===''?null:+$event" placeholder="On request"/></label><label><span>Available stock</span><input type="number" min="1" [(ngModel)]="item.stock"/></label><div class="blocked-date-editor">
+  <div class="blocked-date-heading"><label [for]="'blocked-date-'+item._id">Blocked dates</label><span class="blocked-date-counter">{{item.blockedDates.length}} / 100</span></div>
+  <div class="blocked-date-controls">
+    <input class="blocked-date-picker" type="date" [id]="'blocked-date-'+item._id" [ngModel]="blockedDateDrafts[item._id] || ''" (ngModelChange)="blockedDateDrafts[item._id] = $event" [attr.aria-label]="'Choose a date to block for ' + item.name" />
+    <button class="blocked-date-add" type="button" (click)="addBlockedDate(item)" [disabled]="!blockedDateDrafts[item._id] || item.blockedDates.length >= 100">+ Add date</button>
+  </div>
+  @if(item.blockedDates.length){
+    <div class="blocked-date-chips" aria-label="Currently blocked dates">
+      @for(blockedDate of item.blockedDates; track blockedDate){
+        <span class="blocked-date-chip"><span>{{formatBlockedDate(blockedDate)}}</span><button type="button" (click)="removeBlockedDate(item,blockedDate)" [attr.aria-label]="'Remove blocked date ' + formatBlockedDate(blockedDate) + ' for ' + item.name" title="Remove blocked date">×</button></span>
+      }
+    </div>
+  } @else {
+    <div class="blocked-date-empty">No dates blocked for this service.</div>
+  }
+  <small class="blocked-date-help">Choose dates from the calendar, add each date, then select <strong>Save changes</strong> to apply them.</small>
+</div></div><div class="manage-bottom"><label class="toggle-label"><input type="checkbox" [(ngModel)]="item.active"/> Show service to customers</label><button class="btn btn-pink" (click)="saveService(item)" [disabled]="busy()">Save changes →</button></div></div></article>}
 </div>
 }
 </div></div>
@@ -78,7 +94,35 @@ export class AdminPage {
   loadBookings(){this.api.adminBookings(this.filter||undefined,this.page()).subscribe({next:r=>{this.bookings.set(r.items);this.pages.set(r.pages);},error:e=>this.handleError(e)});}
   setStatus(b:Booking,status:BookingStatus){this.busy.set(true);this.error.set('');this.api.adminUpdate(b._id,status).subscribe({next:()=>{this.busy.set(false);this.message.set(`${b.reference} marked ${status}.`);this.loadBookings();},error:e=>{this.busy.set(false);this.handleError(e);}});}
   monthLabel(date:string):string {return new Date(`${date}T12:00:00`).toLocaleDateString('en-ZA',{month:'short'});}
-  parseDates(value:string):string[]{return value.split(',').map(x=>x.trim()).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x));}
+  blockedDateDrafts: Record<string,string> = {};
+
+  addBlockedDate(item: ServiceItem): void {
+    const date = (this.blockedDateDrafts[item._id] || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date + 'T12:00:00'))) {
+      this.error.set('Choose a valid date from the calendar.');
+      return;
+    }
+    if (item.blockedDates.includes(date)) {
+      this.blockedDateDrafts[item._id] = '';
+      return;
+    }
+    if (item.blockedDates.length >= 100) {
+      this.error.set('You can block up to 100 dates per service.');
+      return;
+    }
+    item.blockedDates = [...item.blockedDates, date].sort();
+    this.blockedDateDrafts[item._id] = '';
+    this.error.set('');
+  }
+
+  removeBlockedDate(item: ServiceItem, date: string): void {
+    item.blockedDates = item.blockedDates.filter(blocked => blocked !== date);
+  }
+
+  formatBlockedDate(date: string): string {
+    const parsed = new Date(date + 'T12:00:00');
+    return Number.isNaN(parsed.getTime()) ? date : parsed.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
   saveService(s:ServiceItem){this.busy.set(true);this.error.set('');this.api.adminSave(s).subscribe({next:r=>{this.busy.set(false);this.message.set(`${r.name} updated successfully.`);},error:e=>{this.busy.set(false);this.handleError(e);}});}
   handleError(e:any){if(e.status===401){this.api.logout();this.loggedIn.set(false);this.error.set('Your session has expired. Please sign in again.');return;}this.error.set(e.error?.message||'Something went wrong. Please try again.');}
 }

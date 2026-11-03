@@ -112,3 +112,89 @@ ion-app > .site-scroll {
   .admin-main { padding-inline: 10px; }
   .admin-topline > .btn { padding-inline: 7px; }
 }
+
+/* Manage services: native date picker with multiple removable blocked dates. */
+.manage-fields .blocked-date-editor {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin-top: 3px;
+  padding: 15px;
+  background: #fafaff;
+  border: 1px solid #e8eaf7;
+  border-radius: 14px;
+}
+.blocked-date-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.blocked-date-heading label { font-size: 11px; color: #46516d; font-weight: 900; }
+.blocked-date-counter { font-size: 10px; font-weight: 800; color: #727b96; background: #edeeff; border-radius: 30px; padding: 5px 10px; }
+.blocked-date-controls { display: flex; gap: 9px; align-items: stretch; min-width: 0; }
+.blocked-date-picker {
+  appearance: auto;
+  display: block;
+  min-width: 0;
+  width: 100%;
+  max-width: 280px;
+  flex: 1 1 180px;
+  min-height: 44px;
+  background: #fff;
+  color: #242f50;
+  border: 1px solid #dce2f0;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 13px;
+  color-scheme: light;
+}
+.blocked-date-picker:focus-visible { outline: 2px solid #6a5af2; outline-offset: 2px; }
+.blocked-date-add {
+  flex: none;
+  border: none;
+  border-radius: 10px;
+  background: #6057e9;
+  color: #fff;
+  font-weight: 850;
+  font-size: 12px;
+  padding: 9px 16px;
+  min-height: 44px;
+}
+.blocked-date-add:disabled { opacity: .5; cursor: not-allowed; }
+.blocked-date-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 13px 0 7px; }
+.blocked-date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
+  border: 1px solid #e1dafd;
+  border-radius: 999px;
+  padding: 4px 6px 4px 12px;
+  color: #4f448a;
+  font-size: 11px;
+  font-weight: 800;
+}
+.blocked-date-chip button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #f4edff;
+  color: #6f56a5;
+  font-size: 17px;
+  line-height: 1;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+}
+.blocked-date-chip button:hover { background: #fbe4f0; color: #c72c70; }
+.blocked-date-chip button:focus-visible, .blocked-date-add:focus-visible { outline: 2px solid #6a5af2; outline-offset: 2px; }
+.blocked-date-empty { color: #8289a1; font-size: 11px; margin-top: 11px; }
+.blocked-date-help { display: block; margin-top: 10px; color: #747f97; font-size: 10px; line-height: 1.6; }
+.blocked-date-help strong { color: #494e74; }
+@media (max-width: 720px) {
+  .manage-fields .blocked-date-editor { padding: 12px; }
+  .blocked-date-controls { gap: 7px; }
+  .blocked-date-picker { max-width: none; min-width: 0; font-size: 12px; padding-inline: 8px; }
+  .blocked-date-add { padding-inline: 12px; font-size: 11px; }
+}
+@media (max-width: 355px) {
+  .blocked-date-controls { flex-direction: column; }
+  .blocked-date-add { width: 100%; }
+}
