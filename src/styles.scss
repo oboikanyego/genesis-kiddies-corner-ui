@@ -174,3 +174,65 @@ ion-datetime.blocked-date-calendar::part(calendar-day disabled) { opacity:.35; t
     margin: 8px 0 22px;
   }
 }
+
+/* Owner login: mobile-first proportions, no forced Safari input-focus zoom.
+   A font size below 16px on iOS Safari causes the viewport to auto-zoom when
+   a form control gains focus. Keep the viewport meta zoom-enabled for accessibility. */
+.admin-login { max-width: 100%; box-sizing: border-box; }
+.admin-login .form-field input { width: 100%; min-width: 0; }
+@media (max-width: 720px) {
+  .admin-login-wrap {
+    width: 100%;
+    min-width: 0;
+    min-height: max(0px, calc(100dvh - 68px));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 26px 16px 34px;
+    overflow-x: clip;
+  }
+  .admin-login {
+    width: min(100%, 420px);
+    min-width: 0;
+    margin: 0 auto;
+    padding: 26px 22px 28px;
+    border-radius: 20px;
+    box-shadow: 0 14px 38px rgba(34,44,93,.08);
+  }
+  .admin-login-icon {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 16px;
+    border-radius: 16px;
+    font-size: 26px;
+  }
+  .admin-login .eyebrow { font-size: 10px; letter-spacing: .1em; }
+  .admin-login h1 {
+    font-size: clamp(27px, 7.5vw, 34px);
+    line-height: 1.14;
+    margin: 9px 0 10px;
+    overflow-wrap: anywhere;
+  }
+  .admin-login p { font-size: 13px; line-height: 1.65; margin-bottom: 22px; }
+  .admin-login .form-field { gap: 8px; margin: 0 0 18px; min-width: 0; }
+  .admin-login .form-field span { font-size: 12px; }
+  .admin-login .form-field input {
+    width: 100%;
+    min-width: 0;
+    min-height: 50px;
+    padding: 12px 14px;
+    font-size: 16px;
+    line-height: 1.35;
+    border-radius: 11px;
+  }
+  .admin-login .form-field input:focus { outline: 2px solid #7564ed; outline-offset: 1px; }
+  .admin-login .btn { width: 100%; min-height: 50px; font-size: 14px; border-radius: 11px; }
+}
+@media (max-width: 720px) and (max-height: 720px) {
+  .admin-login-wrap { align-items: flex-start; padding-top: 18px; }
+}
+@media (max-width: 375px) {
+  .admin-login-wrap { padding-inline: 12px; }
+  .admin-login { padding-inline: 18px; }
+  .admin-login h1 { font-size: 27px; }
+}

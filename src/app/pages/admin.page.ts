@@ -6,7 +6,18 @@ import { BookingApiService } from '../core/booking-api.service';
 import { Booking, BookingStatus, ServiceItem } from '../core/models';
 @Component({selector:'app-admin',standalone:true,imports:[FormsModule,DatePipe,IonicModule],template:`
 @if(!loggedIn()){
-<div class="admin-login-wrap"><form class="surface-card admin-login" (ngSubmit)="login()"><div class="admin-login-icon">🔐</div><div class="eyebrow pink-text">OWNER'S SPACE</div><h1>Welcome back!</h1><p>Sign in to manage requests for The Genesis Kiddies Corner.</p><label class="form-field"><span>Admin email</span><input name="email" [(ngModel)]="email" type="email" required placeholder="owner@example.com"/></label><label class="form-field"><span>Password</span><input name="password" [(ngModel)]="password" type="password" required placeholder="Your password"/></label>@if(error()){<div class="notice error" role="alert">{{error()}}</div>}<button class="btn btn-pink btn-full" [disabled]="busy()">{{busy()?'Signing in...':'Sign in →'}}</button></form></div>
+<div class="admin-login-wrap">
+  <form class="surface-card admin-login" (ngSubmit)="login()" aria-label="Owner sign in">
+    <div class="admin-login-icon" aria-hidden="true">🔐</div>
+    <div class="eyebrow pink-text">OWNER'S SPACE</div>
+    <h1>Welcome back!</h1>
+    <p>Sign in to manage requests for The Genesis Kiddies Corner.</p>
+    <label class="form-field"><span>Admin email</span><input name="email" [(ngModel)]="email" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="owner@example.com"/></label>
+    <label class="form-field"><span>Password</span><input name="password" [(ngModel)]="password" type="password" autocomplete="current-password" required placeholder="Your password"/></label>
+    @if(error()){<div class="notice error" role="alert">{{error()}}</div>}
+    <button type="submit" class="btn btn-pink btn-full" [disabled]="busy()">{{busy()?'Signing in...':'Sign in →'}}</button>
+  </form>
+</div>
 }@else{
 <div class="admin-layout">
   <aside class="admin-sidebar" aria-label="Owner dashboard">

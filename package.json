@@ -13,7 +13,8 @@
     "test:scroll": "node --test scripts/scroll-layout.test.mjs",
     "test:admin-mobile": "node --test scripts/admin-mobile.test.mjs",
     "test:blocked-dates": "node --test scripts/blocked-dates.test.mjs",
-    "test:photos": "node --test scripts/service-photos.test.mjs"
+    "test:photos": "node --test scripts/service-photos.test.mjs",
+    "test:admin-login": "node --test scripts/admin-login-mobile.test.mjs"
   },
   "engines": {
     "node": ">=20.19"
