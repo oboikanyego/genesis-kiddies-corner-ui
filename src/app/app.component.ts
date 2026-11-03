@@ -1,13 +1,16 @@
-import { Component, inject } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { Component, inject, ViewChild } from '@angular/core';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { IonContent, IonicModule } from '@ionic/angular';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs';
 import { BookingApiService } from './core/booking-api.service';
 @Component({
   selector: 'app-root', standalone: true,
   imports: [IonicModule, RouterOutlet, RouterLink, RouterLinkActive],
   template: `
     <ion-app>
-      <div class="app-frame">
+      <ion-content class="site-scroll" [scrollY]="true">
+        <div class="app-frame">
         <header class="site-header">
           <a routerLink="/" class="brand" aria-label="Genesis Kiddies Corner home">
             <span class="brand-crown">👑</span><span class="brand-title"><b>The <em>Genesis</em></b><small>Kiddies Corner</small></span>
@@ -22,14 +25,29 @@ import { BookingApiService } from './core/booking-api.service';
         </header>
         <main class="main-content"><router-outlet></router-outlet></main>
         <footer class="site-footer"><div class="container footer-inner"><div><strong>🎈 The Genesis Kiddies Corner</strong><p>Making every event extra special.</p></div><div><a routerLink="/services">Our Services</a><a routerLink="/my-bookings">Track a booking</a><a routerLink="/admin">Admin</a></div></div><div class="footer-copy">© 2026 The Genesis Kiddies Corner • Made with love for little celebrations</div></footer>
-        <nav class="mobile-nav" aria-label="Mobile navigation">
+        </div>
+      </ion-content>
+      <nav class="mobile-nav" aria-label="Mobile navigation">
           <a routerLink="/" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="selected"><span>⌂</span>Home</a>
           <a routerLink="/services" routerLinkActive="selected"><span>♧</span>Services</a>
           <a routerLink="/cart" routerLinkActive="selected"><span>▣</span>Cart @if (api.cart().length) { <i>{{api.cart().length}}</i> }</a>
           <a routerLink="/my-bookings" routerLinkActive="selected"><span>▤</span>Bookings</a>
         </nav>
-      </div>
     </ion-app>
   `
 })
-export class AppComponent { api=inject(BookingApiService); router=inject(Router); }
+export class AppComponent {
+  @ViewChild(IonContent) private content?: IonContent;
+  api=inject(BookingApiService);
+  router=inject(Router);
+
+  constructor() {
+    // ion-content owns the scroll position, so Angular's native window scroll reset is insufficient.
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      takeUntilDestroyed()
+    ).subscribe(() => {
+      void this.content?.scrollToTop(0);
+    });
+  }
+}

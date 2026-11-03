@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "test:preview": "node preview/smoke-test.cjs",
     "prebuild": "node scripts/generate-env.mjs",
-    "test:env": "node --test scripts/generate-env.test.mjs"
+    "test:env": "node --test scripts/generate-env.test.mjs",
+    "test:scroll": "node --test scripts/scroll-layout.test.mjs"
   },
   "engines": {
     "node": ">=20.19"
