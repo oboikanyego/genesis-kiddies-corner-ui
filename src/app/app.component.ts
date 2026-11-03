@@ -4,34 +4,38 @@ import { IonicModule } from '@ionic/angular';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BookingApiService } from './core/booking-api.service';
+import { IconComponent } from './components/icon.component';
+import { LogoComponent } from './components/logo.component';
 @Component({
   selector: 'app-root', standalone: true,
-  imports: [IonicModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [IonicModule, RouterOutlet, RouterLink, RouterLinkActive, IconComponent, LogoComponent],
   template: `
     <ion-app>
       <div #scrollHost class="site-scroll" role="region" aria-label="Page content" tabindex="0">
-        <div class="app-frame" [class.admin-shell]="router.url.startsWith('/admin')">
+        <div class="app-frame" [class.admin-shell]="isAdmin()" [class.has-tabbar]="!isFlow() && !isAdmin()">
         <header class="site-header">
-          <a routerLink="/" class="brand" aria-label="Genesis Kiddies Corner home">
-            <span class="brand-crown">👑</span><span class="brand-title"><b>The <em>Genesis</em></b><small>Kiddies Corner</small></span>
-          </a>
+          <a routerLink="/" class="brand" aria-label="The Genesis Kiddies Corner home"><app-logo/></a>
           <nav class="desktop-links" aria-label="Main navigation">
             <a routerLink="/" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="active">Home</a>
-            <a routerLink="/services" routerLinkActive="active">Our Services</a>
-            <a routerLink="/my-bookings" routerLinkActive="active">My Bookings</a>
-            <a href="/#occasions">Occasions</a>
+            <a routerLink="/services" routerLinkActive="active">Services</a>
+            <a routerLink="/about" routerLinkActive="active">About</a>
+            <a routerLink="/gallery" routerLinkActive="active">Gallery</a>
+            <a routerLink="/contact" routerLinkActive="active">Contact</a>
           </nav>
-          <div class="header-right"><a routerLink="/cart" class="header-cart" aria-label="Open booking cart">🛍 <span>{{api.cart().length}}</span></a><a routerLink="/services" class="btn btn-pink top-book">Book Now <span>↗</span></a></div>
+          <div class="header-right">
+            @if (api.cart().length) { <a routerLink="/cart" class="header-cart" [attr.aria-label]="'Your booking, ' + api.cart().length + ' items'"><app-icon name="bag" [size]="22"/><span>{{api.cart().length}}</span></a> }
+            <a routerLink="/services" class="btn btn-pink btn-pill top-book">Book Now</a>
+          </div>
         </header>
         <main class="main-content"><router-outlet></router-outlet></main>
-        <footer class="site-footer"><div class="container footer-inner"><div><strong>🎈 The Genesis Kiddies Corner</strong><p>Making every event extra special.</p></div><div><a routerLink="/services">Our Services</a><a routerLink="/my-bookings">Track a booking</a><a routerLink="/admin">Admin</a></div></div><div class="footer-copy">© 2026 The Genesis Kiddies Corner • Made with love for little celebrations</div></footer>
+        <footer class="site-footer"><div class="container footer-inner"><span>© {{year}} The Genesis Kiddies Corner</span><span class="footer-links"><a routerLink="/services">Services</a><a routerLink="/my-bookings">My Bookings</a><a routerLink="/admin">Admin</a></span></div></footer>
         </div>
       </div>
-      <nav class="mobile-nav" [class.admin-route-hidden]="router.url.startsWith('/admin')" aria-label="Mobile navigation">
-          <a routerLink="/" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="selected"><span>⌂</span>Home</a>
-          <a routerLink="/services" routerLinkActive="selected"><span>♧</span>Services</a>
-          <a routerLink="/cart" routerLinkActive="selected"><span>▣</span>Cart @if (api.cart().length) { <i>{{api.cart().length}}</i> }</a>
-          <a routerLink="/my-bookings" routerLinkActive="selected"><span>▤</span>Bookings</a>
+      <nav class="mobile-nav" [class.admin-route-hidden]="isAdmin()" [class.flow-hidden]="isFlow()" aria-label="Mobile navigation">
+          <a routerLink="/" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="selected"><app-icon name="home" [size]="24"/>Home</a>
+          <a routerLink="/services" routerLinkActive="selected"><app-icon name="services" [size]="24"/>Services</a>
+          <a routerLink="/my-bookings" routerLinkActive="selected"><app-icon name="bookings" [size]="24"/>Bookings</a>
+          <a routerLink="/more" routerLinkActive="selected"><app-icon name="more" [size]="24"/>More @if (api.cart().length) { <i aria-hidden="true"></i> }</a>
         </nav>
     </ion-app>
   `
@@ -40,6 +44,7 @@ export class AppComponent {
   @ViewChild("scrollHost") private scrollHost?: ElementRef<HTMLDivElement>;
   api=inject(BookingApiService);
   router=inject(Router);
+  year = new Date().getFullYear();
 
   constructor() {
     // Our dedicated app scroller owns scroll position because Ionic fixes document/body.
@@ -50,4 +55,8 @@ export class AppComponent {
       this.scrollHost?.nativeElement.scrollTo(0, 0);
     });
   }
+
+  isAdmin(): boolean { return this.router.url.startsWith('/admin'); }
+  /** Booking-flow screens have their own back / next buttons, so the bottom tab bar is hidden there (as in the design). */
+  isFlow(): boolean { return /^\/(cart|book|confirmation|services\/.+)/.test(this.router.url); }
 }

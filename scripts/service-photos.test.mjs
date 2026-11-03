@@ -9,10 +9,11 @@ const api=read('src/app/core/booking-api.service.ts');
 const home=read('src/app/pages/home.page.ts');
 const detail=read('src/app/pages/detail.page.ts');
 
-test('all seven services have real image URLs rather than SVG artwork', () => {
+test('every service (including the stall service) has a real image URL rather than SVG artwork', () => {
   const matches=[...photos.matchAll(/'([a-z-]+)': '(https:\/\/[^']+\.jpg)'/g)];
-  assert.equal(matches.length,7);
-  assert.equal(new Set(matches.map(m=>m[1])).size,7);
+  assert.equal(matches.length,8);
+  assert.equal(new Set(matches.map(m=>m[1])).size,8);
+  assert.ok(matches.some(m=>m[1]==='stall-sales-service'),'the Stall & Sales Service needs a photo');
   for(const [,slug,url] of matches){
     assert.ok(url.startsWith('https://res.cloudinary.com/dv2hhefed/image/upload/'),slug);
     assert.ok(!url.endsWith('.svg'));

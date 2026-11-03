@@ -11,6 +11,7 @@ Genesis Kiddies Corner uses real licensed photographic **examples**, not photos 
 | Popcorn machine | Louis Hansel (Unsplash) — https://unsplash.com/photos/closeup-photo-of-blue-and-red-popcorn-popping-machine-Txj91pjCZdA |
 | Candy floss machine | Faizan Ali (Unsplash) — https://unsplash.com/photos/cotton-candy-being-made-at-a-colorful-stand-YRgCGUdbX8A |
 | Face painting | Lisa Alam (Unsplash) — https://unsplash.com/photos/someone-is-applying-face-paint-on-a-child-naAekwfjlio |
+| Stall & Sales Service | Stand-in: the candy floss stall photo above (Faizan Ali, Unsplash) until the owner supplies a photo of their own stall |
 | Homepage event setup | Jose Marroquin (Unsplash) — https://unsplash.com/photos/a-decorated-event-space-with-tables-and-balloons-Cfz5r15fKdU |
 
 Licenses: https://unsplash.com/license, https://www.pexels.com/license/. Check people/brands depicted in pictures before paid advertising or implying an endorsement.

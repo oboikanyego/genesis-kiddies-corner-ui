@@ -9,8 +9,13 @@ export const SERVICE_PHOTOS: Record<string, string> = {
   'ice-cream-machine': 'https://res.cloudinary.com/dv2hhefed/image/upload/v1793713441/genesis-kiddies-corner/services/ice-cream-machine.jpg',
   'popcorn-machine': 'https://res.cloudinary.com/dv2hhefed/image/upload/v1793713446/genesis-kiddies-corner/services/popcorn-machine.jpg',
   'candy-floss-machine': 'https://res.cloudinary.com/dv2hhefed/image/upload/v1793713308/genesis-kiddies-corner/services/candy-floss.jpg',
-  'face-painting': 'https://res.cloudinary.com/dv2hhefed/image/upload/v1793713453/genesis-kiddies-corner/services/face-painting.jpg'
+  'face-painting': 'https://res.cloudinary.com/dv2hhefed/image/upload/v1793713453/genesis-kiddies-corner/services/face-painting.jpg',
+  // Stall & Sales Service: stand-in photo (a colourful party stall) until the owner supplies their own.
+  'stall-sales-service': 'https://res.cloudinary.com/dv2hhefed/image/upload/v1793713308/genesis-kiddies-corner/services/candy-floss.jpg'
 };
+
+/** Homepage banner photo (a decorated party setup). */
+export const HERO_PHOTO = 'https://res.cloudinary.com/dv2hhefed/image/upload/v1793713618/genesis-kiddies-corner/hero/party-setup.jpg';
 
 // Protects legacy carts and API records that still contain the original demo SVGs,
 // but NEVER overwrites a custom image URL selected by the owner.

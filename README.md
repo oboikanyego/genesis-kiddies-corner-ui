@@ -1,22 +1,25 @@
 # The Genesis Kiddies Corner — Ionic + Angular UI
 
-Responsive **desktop + mobile customer booking website and owner dashboard**, matching the supplied bright pink/blue/yellow concepts. The backend lives separately in `genesis-kiddies-corner-api`.
+Responsive **desktop + mobile customer booking website and owner dashboard**, built to follow the approved design (17 screens: desktop and phone). The backend lives separately in `genesis-kiddies-corner-api`.
 
 ## Included screens
-1. Homepage with illustrated hero, seven service shortcuts, popular services, event types
-2. Services catalogue with categories and search
-3. Service details with rental / staffed / stall modes and quantity selection
-4. Booking cart: combine multiple items, adjust quantities
-5. Booking form: event type, date/time, venue, guest count, notes, name, email and phone
-6. Confirmation screen with unique booking reference
-7. Booking tracker (reference + customer email, no login needed)
-8. Admin login, dashboard, event calendar, booking approvals and service pricing/stock/blocked dates
+Customer site (desktop and phone):
+1. **Homepage** — "Making Every Event Extra Special" hero, service shortcuts, *Perfect for Every Occasion*
+2. **Our Services** — the six services with "From R…" prices and *View Details*
+3. **Service Details** — photo, price per day/event, *What's Included* and the *Book This Service* panel (event date, start/end time, event type, number of kids → *Add to Booking*). On phones the panel opens as its own *Book This Service* screen
+4. **Your Booking** (cart) — items with date/time, quantity, remove, *Estimated Total*, *Proceed to Booking*
+5. **Booking Details** — 3 steps: *Event Details*, *Customer Details*, *Review & Submit*
+6. **Booking Request Submitted!** — confirmation with the booking reference (copy button)
+7. **My Bookings** — *Upcoming* / *Past*, status chips (Pending, Confirmed, Cancelled…) and *View Details*
+8. About, Gallery, Contact (and *More* on phones)
+
+Owner area (`/admin`): sign in, **Dashboard** (Total / Pending / Confirmed / Cancelled, Upcoming Bookings, month calendar), **Bookings** (approve / decline / complete / cancel), **Calendar**, **Services** (price, stock, blocked dates, show/hide) and **Settings**.
 
 ## Run locally
 1. `npm install` (requires Node.js >=20.19; Angular 20 and Ionic 8).
 2. Update `src/environments/environment.ts` only if your API isn't on `http://localhost:10000/api`.
 3. `npm start` → `http://localhost:4200`.
-4. Run the separate backend and its `npm run seed` command against MongoDB Atlas.
+4. Run the separate backend (it adds the six services by itself when it starts).
 5. Admin area: `/admin`. The credentials are `ADMIN_EMAIL` and `ADMIN_PASSWORD` configured on the backend. They are never hardcoded in frontend.
 
 ## Netlify deployment
@@ -31,17 +34,28 @@ For a local production build: `API_URL=https://your-backend.onrender.com/api npm
 Run `npm run test:env` to test the configuration generator.
 
 ## How booking works
-- The user can browse services and add several choices to the cart, then submit one booking request.
+- The customer browses services and, on a service page, chooses the event date, times, event type and number of kids, then taps **Add to Booking**. One booking is for **one event**, so the event details are shared by everything in the cart.
+- **Booking Details** collects the event details, then the customer's name, mobile number and email, then shows a review before the request is sent.
 - Requests initially remain **pending** and do not reserve availability until manually confirmed by the owner.
 - The admin approves or declines the request. Confirmation verifies whether confirmed bookings already occupy equipment/stock for overlapping time windows.
-- `price: null` is deliberate until the business owner sets real prices; the UI shows **Price on request**. No card payments or WhatsApp integration.
-- The UI will display a **catalogue preview** if the API is offline; submitting bookings requires a running backend.
+- **My Bookings** has no login: bookings made on a device are remembered in that browser (reference + email) and their status is refreshed from the API. A booking made elsewhere can be added with *Find a booking made on another device*.
+- Booking references look like `GKC-20261115-001` (event date + running number).
+- The UI will display a **catalogue preview** (the design's six services) if the API is offline; submitting bookings requires a running backend.
 
-## Assets
-All seven service illustrations are original SVG graphics in `src/assets/illustrations`, so no third-party image service or paid asset licence is required. Replace them with client-provided photos later if desired.
+## Text, prices and photos
+- **Service names, texts and prices** come from the API (`genesis-kiddies-corner-api/src/lib/serviceContent.ts`, copied from the design). The offline preview in `src/app/core/demo-data.ts` has the same text. `npm run test:design` fails if the approved texts are changed by accident.
+- **Review stars** ("4.9 (28 reviews)") are only shown when the owner has entered a real rating and review count for a service. No invented reviews are shown.
+- **Service photos**: licensed stock photos hosted on Cloudinary (see `SERVICE_PHOTO_SOURCES.md`), mapped by service in `src/app/core/service-photos.ts`. The *Stall & Sales Service* currently uses a stand-in photo. Upload your own photos and replace the URLs. An owner-chosen image URL on a service always wins.
+- **Homepage banner** photo: `HERO_PHOTO` in `service-photos.ts`.
+- **Perfect for Every Occasion** tiles: colourful tiles by default. Add a `photo` URL to an entry in `src/app/core/site-config.ts` to show a photograph instead.
+- **Contact page**: fill in `SITE.contact` in `site-config.ts` (phone, WhatsApp, email, area). Empty values are hidden.
+- **Logo**: drawn in `src/app/components/logo.component.ts` (SVG). Replace it with the official logo file when you have one.
 
 ## Scope
 MVP deliberately excludes online payments, customer sign-ups, messaging, analytics, invoicing and unnecessary integrations. Admin is a single owner account configured by environment variables.
+
+## Tests
+`npm run test:env`, `test:scroll`, `test:admin-mobile`, `test:admin-login`, `test:blocked-dates`, `test:photos`, `test:design`, `test:format` and `npm run typecheck` all run in CI (`.github/workflows/verify.yml`).
 
 ## Scrolling and page layout
 

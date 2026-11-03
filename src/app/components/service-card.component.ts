@@ -1,13 +1,18 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
 import { ServiceItem } from '../core/models';
-@Component({ selector: 'app-service-card', standalone: true, imports: [RouterLink,IonicModule,CommonModule], template: `
+import { formatMoney } from '../core/format';
+@Component({ selector: 'app-service-card', standalone: true, imports: [RouterLink], template: `
   <article class="service-card">
-    <a [routerLink]="['/services',service.slug]" class="service-photo"><img [src]="service.image" [alt]="service.name" loading="lazy"/><span *ngIf="featured" class="service-label">Popular pick</span></a>
-    <div class="service-card-body"><div class="small-category">{{service.category}}</div><h3>{{service.name}}</h3><p>{{service.description}}</p>
-      <div class="service-bottom"><div><small>Starting from</small><strong>{{service.price===null?'Get a quote': 'R'+service.price.toLocaleString('en-ZA')}}</strong></div><a class="service-arrow" [routerLink]="['/services',service.slug]" [attr.aria-label]="'View '+service.name">↗</a></div>
+    <a [routerLink]="['/services', service.slug]" class="service-photo" tabindex="-1" aria-hidden="true"><img [src]="service.image" [alt]="service.name"/></a>
+    <div class="service-card-body">
+      <h3>{{service.name}}</h3>
+      <p>{{service.summary || service.description}}</p>
+      <strong class="service-price">{{ price }}</strong>
+      <a class="btn btn-pink btn-block" [routerLink]="['/services', service.slug]">View Details</a>
     </div>
   </article>` })
-export class ServiceCardComponent { @Input({required:true}) service!:ServiceItem; @Input() featured=false; }
+export class ServiceCardComponent {
+  @Input({ required: true }) service!: ServiceItem;
+  get price(): string { return this.service.price === null ? 'Price on request' : 'From ' + formatMoney(this.service.price); }
+}
