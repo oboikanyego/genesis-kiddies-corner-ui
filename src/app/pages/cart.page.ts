@@ -1,0 +1,11 @@
+import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { BookingApiService } from '../core/booking-api.service';
+import { MODE_LABELS } from '../core/models';
+@Component({ selector:'app-cart', standalone:true, imports:[RouterLink], template: `
+<section class="page-hero slim"><div class="container"><div class="eyebrow">YOUR HAPPY LITTLE PLAN</div><h1>Your <span>booking cart</span></h1><p>All your favourite extras in one place.</p></div></section>
+<div class="container section"><div class="cart-layout"><div class="surface-card cart-panel"><div class="panel-header"><h2>Selected services <small>({{api.cart().length}})</small></h2><a routerLink="/services">+ Add more</a></div>
+@if(api.cart().length===0){<div class="empty-state"><div>🛍️</div><h3>Nothing in your booking yet</h3><p>Go pick something fun for your celebration.</p><a class="btn btn-pink" routerLink="/services">Browse services</a></div>}
+@for(item of api.cart();track item.service.slug+'-'+item.mode; let i=$index){<div class="cart-item"><img [src]="item.service.image" [alt]="item.service.name"/><div class="cart-description"><h3>{{item.service.name}}</h3><p>{{modeLabels[item.mode]}}</p><b>{{item.service.price===null?'Price on request':'R'+item.service.price.toLocaleString('en-ZA')}}</b></div><div class="qty-selector compact"><button (click)="api.quantity(i,-1)" aria-label="Decrease">−</button><span>{{item.quantity}}</span><button (click)="api.quantity(i,1)" aria-label="Increase">+</button></div><button class="remove-btn" (click)="api.remove(i)" aria-label="Remove item">✕</button></div>}
+</div><aside class="surface-card summary-panel"><h2>Booking summary</h2><div class="summary-row"><span>Items selected</span><b>{{api.cart().length}}</b></div><div class="summary-row"><span>Estimated total</span><b>{{api.totalKnown()?'R'+api.total().toLocaleString('en-ZA'):'To be quoted'}}</b></div><hr/><p class="summary-hint">💡 Availability and final pricing are confirmed by The Genesis Kiddies Corner.</p><a [class.disabled]="!api.cart().length" [attr.aria-disabled]="!api.cart().length" routerLink="/book" class="btn btn-pink btn-full">Continue to booking <span>↗</span></a><a routerLink="/services" class="continue-link">← Keep browsing</a></aside></div></div>` })
+export class CartPage { api=inject(BookingApiService); modeLabels=MODE_LABELS; }
