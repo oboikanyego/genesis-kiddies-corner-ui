@@ -5,7 +5,7 @@ Responsive **desktop + mobile customer booking website and owner dashboard**, bu
 ## Included screens
 Customer site (desktop and phone):
 1. **Homepage** — "Making Every Event Extra Special" hero, service shortcuts, *Perfect for Every Occasion*
-2. **Our Services** — the six services with "From R…" prices and *View Details*
+2. **Our Services** — the design's six services with "From R…" prices and *View Details*, followed by the Popcorn Machine and the Candy Floss Machine (*Price on request* until you set a price)
 3. **Service Details** — photo, price per day/event, *What's Included* and the *Book This Service* panel (event date, start/end time, event type, number of kids → *Add to Booking*). On phones the panel opens as its own *Book This Service* screen
 4. **Your Booking** (cart) — items with date/time, quantity, remove, *Estimated Total*, *Proceed to Booking*
 5. **Booking Details** — 3 steps: *Event Details*, *Customer Details*, *Review & Submit*
@@ -40,7 +40,7 @@ Run `npm run test:env` to test the configuration generator.
 - The admin approves or declines the request. Confirmation verifies whether confirmed bookings already occupy equipment/stock for overlapping time windows.
 - **My Bookings** has no login: bookings made on a device are remembered in that browser (reference + email) and their status is refreshed from the API. A booking made elsewhere can be added with *Find a booking made on another device*.
 - Booking references look like `GKC-20261115-001` (event date + running number).
-- The UI will display a **catalogue preview** (the design's six services) if the API is offline; submitting bookings requires a running backend.
+- The UI will display a **catalogue preview** (the same eight services) if the API is offline; submitting bookings requires a running backend.
 
 ## Text, prices and photos
 - **Service names, texts and prices** come from the API (`genesis-kiddies-corner-api/src/lib/serviceContent.ts`, copied from the design). The offline preview in `src/app/core/demo-data.ts` has the same text. `npm run test:design` fails if the approved texts are changed by accident.
@@ -48,9 +48,9 @@ Run `npm run test:env` to test the configuration generator.
 - **Pictures** that came with the design are in `src/assets/images` (homepage banner, the services, all six occasions and the round shortcut icons), each in light WebP sizes: `-lg` for the details page, `-md` for cards, `-sm` for thumbnails. They are AI-generated illustrations, not photographs of your own equipment, so the site labels them *Illustrative image* and says the exact equipment is confirmed by the owner. See `SERVICE_PHOTO_SOURCES.md` and `src/assets/images/README.md`.
 - **Using your own photos**: an image you have chosen for a service in the database is never replaced. To change a design picture for everyone, overwrite the files with the same names.
 - **Occasion pictures**: all six *Perfect for Every Occasion* tiles have a picture. To use a different one, overwrite its file in `src/assets/images/occasions/` (same name) or change its path in `src/app/core/site-config.ts`. A tile without a picture falls back to a coloured emoji tile.
-- **Popcorn Machine and Candy Floss Machine** pictures are included too. Those two services are hidden because the design lists six services; switch them on in Admin → Services and their pictures appear.
+- **Popcorn Machine and Candy Floss Machine** are shown after the design's six services, with their own pictures, and read *Price on request* until you enter a price in Admin → Services. The homepage keeps the design's six round shortcuts. To hide either one, untick *Show service to customers* in Admin → Services; it then stays hidden.
 - **Homepage banner**: `src/assets/images/hero/` (`HERO_IMAGES` in `src/app/core/service-photos.ts`).
-- **Contact page**: fill in `SITE.contact` in `site-config.ts` (phone, WhatsApp, email, area). Empty values are hidden.
+- **Contact details** are entered by the owner in the website itself, not in the code: **sign in at `/admin` → Settings → Contact details** (phone number, WhatsApp number, email, area we serve) and press *Save contact details*. They show on the **Contact page** straight away (*View the Contact page* opens it). A box left empty is not shown, the phone and WhatsApp numbers become tap-to-call and tap-to-chat links, and wrong values are refused with a message beside the box. The details are stored by the API (`GET /api/settings`), so nothing needs to be edited or redeployed.
 - **Logo and icon**: the official logo (header, phone homepage and owner sidebar) and the icon (browser tab, iPhone home-screen icon, app manifest and the owner sign-in card) are in `src/assets/images/brand/`, with `favicon.ico`, `apple-touch-icon.png` and `manifest.webmanifest` in `public/`. To change them, overwrite the files with the same names.
 
 ## Scope

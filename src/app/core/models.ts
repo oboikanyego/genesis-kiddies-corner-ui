@@ -53,6 +53,9 @@ export interface AdminStats {
   recent: Booking[];
   upcoming?: Booking[];
 }
+/** The contact details the owner enters in Admin > Settings. An empty string means "not set", and it is not shown on the website. */
+export interface ContactDetails { phone: string; whatsapp: string; email: string; area: string; }
+export const EMPTY_CONTACT: ContactDetails = { phone: '', whatsapp: '', email: '', area: '' };
 export const EVENT_TYPES = ['Kiddies Party','Family Day','Graduation','School Event','Community Event','Church Event','Other'];
 export const MODE_LABELS: Record<BookingMode, string> = { rental: 'Equipment rental', staffed: 'Staffed service', stall: 'Set up a stall' };
 /** Every half hour from 06:00 to 22:00, for the start/end time drop-downs. */

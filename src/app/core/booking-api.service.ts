@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, catchError, map, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AdminStats, Booking, BookingPage, BookingRequest, BookingStatus, CartItem, EventDraft, SavedBooking, ServiceItem } from './models';
+import { AdminStats, Booking, BookingPage, BookingRequest, BookingStatus, CartItem, ContactDetails, EventDraft, SavedBooking, ServiceItem } from './models';
 import { DEMO_SERVICES } from './demo-data';
 import { servicePhotoFor } from './service-photos';
 import { todayIso } from './format';
@@ -104,6 +104,8 @@ export class BookingApiService {
 
   sendBooking(data: BookingRequest) { return this.http.post<{ reference: string; status: string; message: string }>(`${this.url}/bookings`, data); }
   track(reference: string, email: string) { return this.http.get<Booking>(`${this.url}/bookings/track`, { params: { reference, email } }); }
+  /** The contact details the owner entered in Admin > Settings (the Contact page). Asked for afresh each time, so a change shows at once. */
+  contactDetails() { return this.http.get<ContactDetails>(`${this.url}/settings`); }
 
   private auth() { return { headers: new HttpHeaders({ Authorization: `Bearer ${sessionStorage.getItem('gkc_admin_token') || ''}` }) }; }
   login(email: string, password: string) { return this.http.post<{ token: string }>(`${this.url}/admin/login`, { email, password }).pipe(tap(r => sessionStorage.setItem('gkc_admin_token', r.token))); }
@@ -115,4 +117,6 @@ export class BookingApiService {
   adminUpdate(id: string, status: BookingStatus) { return this.http.patch<Booking>(`${this.url}/admin/bookings/${id}/status`, { status }, this.auth()); }
   adminServices() { return this.http.get<ServiceItem[]>(`${this.url}/admin/services`, this.auth()); }
   adminSave(service: ServiceItem) { return this.http.patch<ServiceItem>(`${this.url}/admin/services/${service._id}`, service, this.auth()); }
+  adminSettings() { return this.http.get<ContactDetails>(`${this.url}/admin/settings`, this.auth()); }
+  adminSaveSettings(details: ContactDetails) { return this.http.put<ContactDetails>(`${this.url}/admin/settings`, details, this.auth()); }
 }

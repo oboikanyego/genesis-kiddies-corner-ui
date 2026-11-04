@@ -17,7 +17,8 @@
     "test:admin-login": "node --test scripts/admin-login-mobile.test.mjs",
     "test:design": "node --test scripts/design-content.test.mjs",
     "test:format": "node --test scripts/format.test.mjs",
-    "test:brand": "node --test scripts/brand.test.mjs"
+    "test:brand": "node --test scripts/brand.test.mjs",
+    "test:contact": "node --test scripts/contact.test.mjs"
   },
   "engines": {
     "node": ">=20.19"

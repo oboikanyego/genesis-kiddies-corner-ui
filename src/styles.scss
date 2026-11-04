@@ -365,8 +365,10 @@ ion-app > .site-scroll {
 .info-card p{font:500 16px/1.7 var(--font);color:var(--text)}
 .info-steps{padding-left:22px;margin:0 0 26px;color:var(--text);line-height:1.8;font-size:16px}
 .info-actions{display:flex;gap:12px;flex-wrap:wrap}
-.contact-list{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:14px}
-.contact-list li{display:flex;align-items:center;gap:12px;font:600 16px var(--font)}
+.contact-list{list-style:none;margin:0 0 8px;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.contact-list li{display:flex;align-items:flex-start;gap:12px;font:600 16px/1.5 var(--font);min-width:0}
+.contact-list li>app-icon{flex:none;margin-top:2px}
+.contact-list li>a,.contact-list li>span{min-width:0;overflow-wrap:anywhere}
 .contact-list .icon{color:var(--pink)}
 .gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 .gallery-tile{position:relative;display:block;margin:0;border-radius:16px;overflow:hidden;aspect-ratio:4/3;background:#e9edf5}
@@ -564,6 +566,18 @@ ion-app > .site-scroll {
 .pagination button:disabled{opacity:.4}
 
 .settings-panel{max-width:640px}
+.settings-panel+.settings-panel{margin-top:22px}
+.panel-help{margin:-6px 0 20px;font:500 14px/1.6 var(--font);color:var(--muted)}
+.contact-form{display:grid;gap:18px}
+.contact-form .field input{font-size:16px}
+.contact-form .field input[aria-invalid="true"]{border-color:#e0446f;outline-color:#e0446f}
+.contact-form .field input:disabled{background:#f3f5f9;color:var(--muted)}
+.field-help{font:500 13px/1.5 var(--font);color:var(--muted)}
+.contact-actions{display:flex;flex-wrap:wrap;gap:12px}
+.contact-actions .btn{flex:1 1 190px}
+.contact-note{margin:0}
+.contact-status{margin:0 0 18px;font:500 16px/1.6 var(--font);color:var(--muted)}
+.contact-status .link-btn{font-size:inherit;text-decoration:underline}
 .settings-list{display:grid;grid-template-columns:150px 1fr;gap:12px 18px;margin:0 0 22px}
 .settings-list dt{color:var(--muted);font-size:14px}
 .settings-list dd{margin:0;font:600 15px var(--font);overflow-wrap:anywhere}

@@ -1,16 +1,7 @@
 /**
- * Business details shown on the website.
- * Fill in the contact details below to show them on the Contact page; leave a value empty to hide it.
+ * Fixed website content. The business's contact details are NOT here: the owner enters them in the admin area
+ * (Settings > Contact details) and the Contact page reads them from the API.
  */
-export const SITE = {
-  name: 'The Genesis Kiddies Corner',
-  contact: {
-    phone: '',     // e.g. '082 123 4567'
-    whatsapp: '',  // e.g. '27821234567' (international format, no + or spaces)
-    email: '',     // e.g. 'hello@example.com'
-    area: ''       // e.g. 'Johannesburg and surrounds'
-  }
-};
 
 /**
  * The six "Perfect for Every Occasion" tiles. A tile with a `photo` shows it; one without shows a colourful emoji tile.

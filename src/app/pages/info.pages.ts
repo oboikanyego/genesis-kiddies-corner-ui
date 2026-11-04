@@ -1,8 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BookingApiService } from '../core/booking-api.service';
-import { GALLERY_EXTRAS, SITE } from '../core/site-config';
+import { telHref, whatsappHref } from '../core/contact';
+import { ContactDetails, EMPTY_CONTACT } from '../core/models';
+import { GALLERY_EXTRAS } from '../core/site-config';
 import { IconComponent } from '../components/icon.component';
 import { PhotoPipe } from '../components/photo.pipe';
 
@@ -35,15 +37,20 @@ export class AboutPage {}
 <p class="photo-note">Illustrative images. The exact equipment is confirmed when we review your booking.</p></div>` })
 export class GalleryPage { api = inject(BookingApiService); extras = GALLERY_EXTRAS; }
 
+/** Contact: shows the details the owner entered in Admin > Settings (read from the API); an empty detail is left out. */
 @Component({ selector: 'app-contact', standalone: true, imports: [RouterLink, IconComponent], template: `
 <section class="page-head info-head"><div class="container"><h1>Contact</h1><p>We will review the availability and contact you soon.</p></div></section>
 <div class="container info-wrap"><div class="info-card">
-  @if (hasDetails) {
+  @if (state() === 'loading') {
+    <p class="contact-status" role="status">Loading our contact details…</p>
+  } @else if (state() === 'error') {
+    <p class="contact-status" role="alert">We couldn't load our contact details just now. <button type="button" class="link-btn" (click)="load()">Try again</button></p>
+  } @else if (hasDetails()) {
     <ul class="contact-list">
-      @if (c.phone) { <li><app-icon name="phone" [size]="20"/><a [href]="telHref">{{c.phone}}</a></li> }
-      @if (c.whatsapp) { <li><app-icon name="phone" [size]="20"/><a [href]="'https://wa.me/' + c.whatsapp" target="_blank" rel="noopener">WhatsApp</a></li> }
-      @if (c.email) { <li><app-icon name="mail" [size]="20"/><a [href]="'mailto:' + c.email">{{c.email}}</a></li> }
-      @if (c.area) { <li><app-icon name="pin" [size]="20"/><span>{{c.area}}</span></li> }
+      @if (c().phone) { <li><app-icon name="phone" [size]="20"/><a [href]="telHref(c().phone)">{{c().phone}}</a></li> }
+      @if (c().whatsapp) { <li><app-icon name="phone" [size]="20"/><a [href]="whatsappHref(c().whatsapp)" target="_blank" rel="noopener">WhatsApp {{c().whatsapp}}</a></li> }
+      @if (c().email) { <li><app-icon name="mail" [size]="20"/><a [href]="'mailto:' + c().email">{{c().email}}</a></li> }
+      @if (c().area) { <li><app-icon name="pin" [size]="20"/><span>{{c().area}}</span></li> }
     </ul>
   }
   <h3>Ready to book?</h3>
@@ -51,9 +58,20 @@ export class GalleryPage { api = inject(BookingApiService); extras = GALLERY_EXT
   <div class="info-actions"><a routerLink="/services" class="btn btn-pink btn-pill">Book Now</a><a routerLink="/my-bookings" class="btn btn-outline btn-pill">View My Bookings</a></div>
 </div></div>` })
 export class ContactPage {
-  c = SITE.contact;
-  hasDetails = !!(this.c.phone || this.c.whatsapp || this.c.email || this.c.area);
-  telHref = 'tel:' + this.c.phone.replace(/\s+/g, '');
+  private api = inject(BookingApiService);
+  state = signal<'loading' | 'ready' | 'error'>('loading');
+  c = signal<ContactDetails>(EMPTY_CONTACT);
+  hasDetails = computed(() => Object.values(this.c()).some(value => !!value));
+  telHref = telHref;
+  whatsappHref = whatsappHref;
+  constructor() { this.load(); }
+  load() {
+    this.state.set('loading');
+    this.api.contactDetails().subscribe({
+      next: details => { this.c.set({ ...EMPTY_CONTACT, ...details }); this.state.set('ready'); },
+      error: () => this.state.set('error')
+    });
+  }
 }
 
 /** The "More" tab on phones: everything that is not a main tab. */

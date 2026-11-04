@@ -72,6 +72,15 @@ test('the offline catalogue uses the design prices and texts', () => {
     "'Setup and take down', 'Safe and clean equipment', 'Suitable for different age groups', 'Unlimited use during your event'"]);
 });
 
+test('popcorn and candy floss are shown after the design\'s six, as "Price on request"', () => {
+  has('demo', ["name: 'Popcorn Machine', summary: 'Freshly popped popcorn for any event.'", "name: 'Candy Floss Machine', summary: 'Fluffy and colourful candy floss.'"]);
+  const names = [...src.demo.matchAll(/\{ slug: '[a-z-]+', name: '([^']+)'/g)].map(m => m[1]);
+  assert.deepEqual(names, ['Mascot Characters', 'Jumping Castles', 'Slush Machine', 'Ice Cream Machine', 'Face Painting', 'Stall & Sales Service', 'Popcorn Machine', 'Candy Floss Machine']);
+  assert.equal((src.demo.match(/price: null/g) || []).length, 2);
+  // The homepage keeps the design's six round shortcuts; the two extra services appear on the Services page and everywhere else.
+  has('home', ['.slice(0, 6)']);
+});
+
 test('no review score is shown unless the owner has entered a real one', () => {
   assert.ok(src.detail.includes('@if (service.rating && service.reviewCount)'));
   assert.ok(!src.demo.includes('4.9'));

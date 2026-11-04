@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { BookingApiService } from '../core/booking-api.service';
-import { AdminStats, Booking, BookingStatus, ServiceItem } from '../core/models';
+import { AdminStats, Booking, BookingStatus, ContactDetails, EMPTY_CONTACT, ServiceItem } from '../core/models';
+import { contactFieldErrors } from '../core/contact';
 import { formatDate, formatMoney, formatWhen, statusLabel, todayIso } from '../core/format';
 import { servicePhotoFor } from '../core/service-photos';
 import { environment } from '../../environments/environment';
@@ -152,6 +153,22 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
     }
 
     @if(tab()==='settings'){
+      <section class="panel settings-panel" aria-labelledby="contact-title">
+        <h2 id="contact-title">Contact details</h2>
+        <p class="panel-help">Customers see these on the website's Contact page. Leave a box empty to hide it.</p>
+        <form class="contact-form" (ngSubmit)="saveContact()" novalidate aria-labelledby="contact-title">
+          @for(f of contactFields;track f.key){
+            <div class="field">
+              <label [attr.for]="'contact-'+f.key">{{f.label}}</label>
+              <input [id]="'contact-'+f.key" [name]="f.key" [(ngModel)]="contact[f.key]" [type]="f.type" [attr.inputmode]="f.mode" autocomplete="off" autocapitalize="none" spellcheck="false" [attr.maxlength]="f.max" [placeholder]="f.placeholder" [disabled]="!contactLoaded()" [attr.aria-invalid]="contactErrors()[f.key]?'true':null" [attr.aria-describedby]="contactErrors()[f.key]?'contact-'+f.key+'-error':(f.help?'contact-'+f.key+'-help':null)"/>
+              @if(contactErrors()[f.key]){<small class="field-error" [id]="'contact-'+f.key+'-error'" role="alert">{{contactErrors()[f.key]}}</small>}
+              @else if(f.help){<small class="field-help" [id]="'contact-'+f.key+'-help'">{{f.help}}</small>}
+            </div>
+          }
+          <div class="contact-actions"><button type="submit" class="btn btn-pink" [disabled]="busy()||!contactLoaded()">{{busy()?'Saving…':'Save contact details'}}</button><a routerLink="/contact" target="_blank" rel="noopener" class="btn btn-outline">View the Contact page</a></div>
+          @if(contactStatus(); as st){<p class="notice contact-note" [class.success]="st.ok" [class.error]="!st.ok" [attr.role]="st.ok?'status':'alert'">{{st.text}}</p>}
+        </form>
+      </section>
       <section class="panel settings-panel">
         <h2>Your account</h2>
         <dl class="settings-list"><dt>Signed in as</dt><dd>{{adminEmail()||'Owner'}}</dd><dt>Session</dt><dd>You are signed out automatically after 8 hours.</dd><dt>Booking service</dt><dd>{{apiUrl}}</dd></dl>
@@ -192,6 +209,16 @@ export class AdminPage {
   api=inject(BookingApiService); loggedIn=signal(this.api.loggedIn()); tab=signal<AdminTab>('dashboard');
   email='';password='';error=signal('');message=signal('');busy=signal(false);menuOpen=signal(false);
   stats=signal<AdminStats|null>(null);
+  /** Settings > Contact details: the four boxes, what is wrong with each (from the API), and the result of the last save. */
+  contact:ContactDetails={...EMPTY_CONTACT};contactLoaded=signal(false);
+  contactErrors=signal<Partial<Record<keyof ContactDetails,string>>>({});
+  contactStatus=signal<{ok:boolean;text:string}|null>(null);
+  contactFields:{key:keyof ContactDetails;label:string;type:string;mode:string;placeholder:string;max:number;help?:string}[]=[
+    {key:'phone',label:'Phone number',type:'tel',mode:'tel',placeholder:'e.g. 082 123 4567',max:25},
+    {key:'whatsapp',label:'WhatsApp number',type:'tel',mode:'tel',placeholder:'e.g. 082 123 4567',max:25,help:'The Contact page links to a WhatsApp chat with this number.'},
+    {key:'email',label:'Email address',type:'email',mode:'email',placeholder:'e.g. hello@yourbusiness.co.za',max:180},
+    {key:'area',label:'Area we serve',type:'text',mode:'text',placeholder:'e.g. Johannesburg and surrounds',max:120}
+  ];
   bookings=signal<Booking[]>([]); services=signal<ServiceItem[]>([]); filter=''; page=signal(1); pages=signal(1);
   calMonth=signal(todayIso().slice(0,7)); calItems=signal<Booking[]>([]); calSelected=signal<string|null>(null);
   selected=signal<Booking|null>(null);
@@ -211,7 +238,7 @@ export class AdminPage {
   @HostListener('document:keydown.escape') onEscape(){if(this.selected())this.selected.set(null);else if(this.menuOpen())this.menuOpen.set(false);}
   go(tab:AdminTab){this.tab.set(tab);this.menuOpen.set(false);this.load();}
   login(){this.busy.set(true);this.error.set('');this.api.login(this.email,this.password).subscribe({next:()=>{this.busy.set(false);this.loggedIn.set(true);this.password='';this.load();},error:e=>{this.busy.set(false);this.error.set(e.error?.message||'Unable to sign in. Check the API connection.');}});}
-  logout(){this.api.logout();this.loggedIn.set(false);this.password='';this.menuOpen.set(false);this.selected.set(null);}
+  logout(){this.api.logout();this.loggedIn.set(false);this.password='';this.menuOpen.set(false);this.selected.set(null);this.contactLoaded.set(false);}
   adminEmail():string{
     try{const token=sessionStorage.getItem('gkc_admin_token');if(!token)return '';return JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).email||'';}catch{return '';}
   }
@@ -222,6 +249,7 @@ export class AdminPage {
     if(tab==='bookings')this.loadBookings();
     if(tab==='calendar')this.loadCalendar();
     if(tab==='services')this.api.adminServices().subscribe({next:r=>this.services.set(r),error:e=>this.handleError(e)});
+    if(tab==='settings')this.loadContact();
   }
   loadBookings(){this.api.adminBookings(this.filter||undefined,this.page()).subscribe({next:r=>{this.bookings.set(r.items);this.pages.set(r.pages);},error:e=>this.handleError(e)});}
   loadCalendar(){
@@ -306,6 +334,28 @@ export class AdminPage {
     const parsed = new Date(date + 'T12:00:00');
     return Number.isNaN(parsed.getTime()) ? date : parsed.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
   }
+  loadContact(){
+    this.contactErrors.set({});this.contactStatus.set(null);
+    this.api.adminSettings().subscribe({next:r=>{this.contact={...EMPTY_CONTACT,...r};this.contactLoaded.set(true);},error:e=>this.handleError(e)});
+  }
+  saveContact(){
+    if(!this.contactLoaded()||this.busy())return;
+    this.busy.set(true);this.error.set('');this.message.set('');this.contactErrors.set({});this.contactStatus.set(null);
+    this.api.adminSaveSettings({...this.contact}).subscribe({
+      next:saved=>{this.busy.set(false);this.contact={...EMPTY_CONTACT,...saved};this.showContactStatus({ok:true,text:"Saved. These details now show on the website's Contact page."});},
+      error:e=>{this.busy.set(false);this.contactFailed(e);}
+    });
+  }
+  /** The API names what is wrong with each box (errors.fieldErrors): show it beside that box and put the cursor there. */
+  contactFailed(e:any){
+    const errors=contactFieldErrors(e);
+    const firstKey=this.contactFields.find(f=>errors[f.key])?.key;
+    if(firstKey){this.contactErrors.set(errors);this.contactStatus.set({ok:false,text:'Not saved yet. Please check the highlighted boxes.'});setTimeout(()=>document.getElementById('contact-'+firstKey)?.focus());return;}
+    if(e?.status===401){this.handleError(e);return;}
+    this.showContactStatus({ok:false,text:e?.error?.message||'Could not save. Check your connection and try again.'});
+  }
+  /** Shows the result of a save and scrolls it into view: on a phone it would otherwise sit below the buttons, behind the bottom bar. */
+  showContactStatus(status:{ok:boolean;text:string}){this.contactStatus.set(status);setTimeout(()=>document.querySelector('.contact-note')?.scrollIntoView({block:'nearest'}));}
   saveService(s:ServiceItem){this.busy.set(true);this.error.set('');this.api.adminSave(s).subscribe({next:r=>{this.busy.set(false);this.message.set(`${r.name} updated successfully.`);},error:e=>{this.busy.set(false);this.handleError(e);}});}
   handleError(e:any){if(e.status===401){this.api.logout();this.loggedIn.set(false);this.error.set('Your session has expired. Please sign in again.');return;}this.error.set(e.error?.message||'Something went wrong. Please try again.');}
 }
