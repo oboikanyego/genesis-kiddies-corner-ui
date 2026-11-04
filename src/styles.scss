@@ -137,6 +137,7 @@ ion-app > .site-scroll {
 .field input,.field select,.field textarea,.b-notes textarea,.lookup input{width:100%;min-height:50px;border:1px solid #dde3ef;background:#fff;border-radius:12px;padding:12px 15px;font:500 15px var(--font);color:var(--ink);outline-color:var(--indigo)}
 .field input::placeholder,.b-notes textarea::placeholder{color:#a2abbf}
 .field-error{color:#c8244f;font:600 13px var(--font)}
+.hp-field{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
 .select-wrap{position:relative}
 .select-wrap select{appearance:none;-webkit-appearance:none;padding-right:42px;cursor:pointer}
 .select-wrap .icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--ink)}

@@ -1,8 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 import { BookingApiService } from '../core/booking-api.service';
-import { Booking, BookingRequest, EVENT_TYPES, TIME_SLOTS } from '../core/models';
+import { Booking, BookingRequest, CartItem, EVENT_TYPES, TIME_SLOTS } from '../core/models';
+import { bookingErrorMessage, isRetryableTokenError } from '../core/booking-guard';
+import { isValidPhoneNumber } from '../core/contact';
 import { formatDate, formatMoney, formatTimeRange, todayIso } from '../core/format';
 import { IconComponent } from '../components/icon.component';
 import { DateFieldComponent } from '../components/date-field.component';
@@ -10,6 +13,9 @@ import { QtyComponent } from '../components/qty.component';
 import { PhotoPipe } from '../components/photo.pipe';
 
 type Step = 1 | 2 | 3;
+/** The form token the API handed out when the page opened, when it arrived, and how many milliseconds it must age before it is accepted. */
+type FormTokenInfo = { token: string; minWaitMs: number; at: number };
+const phoneValid: ValidatorFn = c => !c.value || isValidPhoneNumber(String(c.value).trim()) ? null : { phone: true };
 const STEP_FIELDS: Record<Step, string[]> = {
   1: ['type', 'date', 'startTime', 'endTime', 'location', 'guestCount', 'notes'],
   2: ['name', 'phone', 'email'],
@@ -74,6 +80,7 @@ const STEP_FIELDS: Record<Step, string[]> = {
         <p class="sum-note">Your booking will be pending until the owner confirms availability. No payment is needed to submit your request.</p>
       </section>
     }
+    <div class="hp-field" aria-hidden="true"><label for="f-website">Website (leave this empty)</label><input id="f-website" formControlName="website" type="text" tabindex="-1" autocomplete="off"/></div>
     @if(error()){<div class="notice error" role="alert">{{error()}}</div>}
     <div class="step-actions">
       <button type="button" class="back-link" (click)="back()"><app-icon name="arrow-left" [size]="18" [stroke]="2.2"/> {{step()===1?'Back to Cart':'Back'}}</button>
@@ -96,9 +103,13 @@ export class BookingPageComponent {
     guestCount:[this.api.event().guestCount,[Validators.min(0),Validators.max(50000)]],
     notes:[this.api.event().notes],
     name:['',[Validators.required,Validators.minLength(2)]],
-    phone:['',[Validators.required,Validators.minLength(9)]],
-    email:['',[Validators.required,Validators.email]]
+    phone:['',[Validators.required,phoneValid]],
+    email:['',[Validators.required,Validators.email]],
+    website:['']
   });
+  /** Spam protection: asked for when the page opens (which also wakes a sleeping API), sent back with the request. */
+  private tokenInfo:Promise<FormTokenInfo|null>|null=null;
+  constructor(){if(this.api.cart().length)this.tokenInfo=this.requestToken();}
   get v(){return this.form.getRawValue();}
   label=computed(()=>this.busy()?'Submitting...':this.step()===1?'Next: Customer Details':this.step()===2?'Next: Review & Submit':'Submit Booking Request');
   bad(name:string):boolean{const c:AbstractControl|null=this.form.get(name);return !!c&&c.invalid&&(c.touched||c.dirty);}
@@ -128,17 +139,37 @@ export class BookingPageComponent {
     this.submit();
   }
   private submit(){
+    if(this.busy())return;
     const v=this.v; const cart=this.api.cart();
     const body:BookingRequest={customer:{name:v.name.trim(),email:v.email.trim(),phone:v.phone.trim()},event:{type:v.type,date:v.date,startTime:v.startTime,endTime:v.endTime,location:v.location.trim(),guestCount:v.guestCount,notes:v.notes.trim()},items:cart.map(i=>({serviceId:i.service._id,quantity:i.quantity,mode:i.mode}))};
     this.busy.set(true);
-    this.api.sendBooking(body).subscribe({
-      next:r=>{
-        const snapshot:Booking={_id:'',reference:r.reference,customer:body.customer,event:body.event,items:cart.map(i=>({serviceId:i.service._id,name:i.service.name,quantity:i.quantity,mode:i.mode,unitPrice:i.service.price})),amount:this.api.totalKnown(cart)?this.api.total(cart):null,status:'pending',createdAt:new Date().toISOString()};
-        this.api.rememberBooking(r.reference,body.customer.email,snapshot);
-        this.api.clear();this.api.resetEvent();
-        this.router.navigate(['/confirmation',r.reference],{state:{email:body.customer.email}});
-      },
-      error:e=>{this.busy.set(false);this.error.set(e?.error?.message||'Could not submit your request. Please try again once the booking service is available.');}
-    });
+    void this.send(body,cart,true);
+  }
+  /** Sends the request with its form token. If the API says the token was missing, too new or too old, it gets a fresh one and tries once more. */
+  private async send(body:BookingRequest,cart:CartItem[],mayRetry:boolean):Promise<void>{
+    let result:{reference:string};
+    try{
+      const token=await this.tokenForSending();
+      result=await firstValueFrom(this.api.sendBooking({...body,website:this.v.website,...(token?{formToken:token}:{})}));
+    }catch(e:any){
+      if(mayRetry&&isRetryableTokenError(e)){this.tokenInfo=this.requestToken();return this.send(body,cart,false);}
+      this.busy.set(false);this.error.set(bookingErrorMessage(e));return;
+    }
+    const snapshot:Booking={_id:'',reference:result.reference,customer:body.customer,event:body.event,items:cart.map(i=>({serviceId:i.service._id,name:i.service.name,quantity:i.quantity,mode:i.mode,unitPrice:i.service.price})),amount:this.api.totalKnown(cart)?this.api.total(cart):null,status:'pending',createdAt:new Date().toISOString()};
+    this.api.rememberBooking(result.reference,body.customer.email,snapshot);
+    this.api.clear();this.api.resetEvent();
+    this.router.navigate(['/confirmation',result.reference],{state:{email:body.customer.email}});
+  }
+  private requestToken():Promise<FormTokenInfo|null>{
+    return firstValueFrom(this.api.bookingFormToken()).then(t=>({token:t.token,minWaitMs:t.minWaitMs??3000,at:Date.now()})).catch(()=>null);
+  }
+  /** The token from when the page opened. People take longer than a few seconds to fill in three steps, so this normally returns at once. */
+  private async tokenForSending():Promise<string|undefined>{
+    let info=await (this.tokenInfo??=this.requestToken());
+    if(!info)info=await (this.tokenInfo=this.requestToken());   // the first try failed (the service may have been asleep): ask once more
+    if(!info)return undefined;                                   // an API that does not hand out tokens: send without one
+    const wait=info.minWaitMs-(Date.now()-info.at);
+    if(wait>0)await new Promise<void>(r=>setTimeout(r,wait+150));
+    return info.token;
   }
 }

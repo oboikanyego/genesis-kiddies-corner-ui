@@ -31,6 +31,9 @@ export interface BookingRequest {
   customer: { name: string; email: string; phone: string };
   event: { type: string; date: string; startTime: string; endTime: string; location: string; guestCount: number; notes: string };
   items: { serviceId: string; quantity: number; mode: BookingMode }[];
+  /** Spam protection: the token the API handed out when the booking page opened, and the hidden "website" box (always empty for a person). */
+  formToken?: string;
+  website?: string;
 }
 export interface Booking {
   _id: string;

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 // The contact helpers are TypeScript; Node runs them directly from 22.18 (older Node skips those tests instead of failing).
 const supported = Boolean(process.features?.typescript);
-const { CONTACT_KEYS, contactFieldErrors, internationalDigits, telHref, whatsappHref } = supported ? await import('../src/app/core/contact.ts') : {};
+const { CONTACT_KEYS, contactFieldErrors, internationalDigits, isValidPhoneNumber, telHref, whatsappHref } = supported ? await import('../src/app/core/contact.ts') : {};
 const check = (name, fn) => test(name, supported ? {} : { skip: 'needs Node 22.18+ (built-in TypeScript support)' }, fn);
 
 const read = path => readFileSync(new URL('../src/app/' + path, import.meta.url), 'utf8');
@@ -18,6 +18,11 @@ check('a South African number becomes the international digits WhatsApp needs, h
   assert.equal(internationalDigits('+44 20 7946 0958'), '442079460958');                           // other countries are left alone
   assert.equal(internationalDigits(''), '');
   assert.equal(internationalDigits('  '), '');
+});
+
+check('phone numbers are accepted the way people write them, and junk is not (the same rule as the API)', () => {
+  for (const good of ['082 123 4567', '0821234567', '+27 82 123 4567', '+27 (0)82 123 4567', '(011) 123-4567', '082.123.4567']) assert.equal(isValidPhoneNumber(good), true, good);
+  for (const bad of ['abcdefghi', '082 123 456a', '12345', '1'.repeat(16), '+++27821234567', '082 123 4567 after 5pm', '<script>alert(1)</script>', '']) assert.equal(isValidPhoneNumber(bad), false, bad);
 });
 
 check('phone links dial the number: local as typed, international with a +', () => {

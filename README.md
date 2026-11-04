@@ -40,6 +40,7 @@ Run `npm run test:env` to test the configuration generator.
 - The admin approves or declines the request. Confirmation verifies whether confirmed bookings already occupy equipment/stock for overlapping time windows.
 - **My Bookings** has no login: bookings made on a device are remembered in that browser (reference + email) and their status is refreshed from the API. A booking made elsewhere can be added with *Find a booking made on another device*.
 - Booking references look like `GKC-20261115-001` (event date + running number).
+- **Spam protection** on the booking form: when the booking page opens it asks the API for a short-lived form token and sends it back with the request, together with a hidden "website" box that people never see or reach with the keyboard (`.hp-field`). If a form is filled in faster than about 3 seconds the page waits out the rest by itself, and an old or missing token is replaced automatically, once. A refused request shows the API's own message, for example when too many requests came from one connection. The mobile number must look like a phone number. Pressing Submit twice sends only one request. See **Spam protection** in the API README; `npm run test:booking-guard` covers the form side.
 - The UI will display a **catalogue preview** (the same eight services) if the API is offline; submitting bookings requires a running backend.
 
 ## Text, prices and photos

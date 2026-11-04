@@ -18,6 +18,15 @@ export function internationalDigits(number: string): string {
   return digits.replace(/^270(?=\d{9}$)/, '27');
 }
 
+/**
+ * A phone number as people type it: 082 123 4567, 0821234567, +27 82 123 4567, (011) 123-4567. Digits with spaces, dashes,
+ * dots and brackets, an optional leading +, and 9 to 15 digits; no letters. The same rule as the API's.
+ */
+export function isValidPhoneNumber(value: string): boolean {
+  const digits = value.replace(/\D/g, '').length;
+  return /^\+?[\d\s().-]+$/.test(value) && digits >= 9 && digits <= 15;
+}
+
 /** A link that dials the number: tel:0821234567 or tel:+27821234567. Empty when there is no number. */
 export function telHref(number: string): string {
   const typed = number.trim();

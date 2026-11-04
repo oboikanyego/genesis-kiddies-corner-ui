@@ -102,7 +102,9 @@ export class BookingApiService {
     writeJson(SAVED_KEY, next);
   }
 
-  sendBooking(data: BookingRequest) { return this.http.post<{ reference: string; status: string; message: string }>(`${this.url}/bookings`, data); }
+  sendBooking(data: BookingRequest) { return this.http.post<{ reference: string; status: string; message: string; duplicate?: boolean }>(`${this.url}/bookings`, data); }
+  /** Spam protection: proof that the booking form was opened. Asked for when the booking page opens; sent back with the request. */
+  bookingFormToken() { return this.http.get<{ token: string; minWaitMs?: number }>(`${this.url}/bookings/form-token`); }
   track(reference: string, email: string) { return this.http.get<Booking>(`${this.url}/bookings/track`, { params: { reference, email } }); }
   /** The contact details the owner entered in Admin > Settings (the Contact page). Asked for afresh each time, so a change shows at once. */
   contactDetails() { return this.http.get<ContactDetails>(`${this.url}/settings`); }
