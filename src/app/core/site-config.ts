@@ -13,8 +13,7 @@ export const SITE = {
 };
 
 /**
- * The six "Perfect for Every Occasion" tiles. A tile with a `photo` shows it; the others show a colourful emoji tile.
- * Still needed (add its path here when you have it): Church Events.
+ * The six "Perfect for Every Occasion" tiles. A tile with a `photo` shows it; one without shows a colourful emoji tile.
  */
 export interface Occasion { label: string; emoji: string; tint: string; photo?: string; }
 export const OCCASIONS: Occasion[] = [
@@ -23,7 +22,7 @@ export const OCCASIONS: Occasion[] = [
   { label: 'Graduations', emoji: '🎓', tint: 'linear-gradient(135deg,#d9d4ff,#c6ecff)', photo: '/assets/images/occasions/graduations-sm.webp' },
   { label: 'School Events', emoji: '🏫', tint: 'linear-gradient(135deg,#ffe2c2,#ffd1d1)', photo: '/assets/images/occasions/school-events-sm.webp' },
   { label: 'Community Events', emoji: '🎪', tint: 'linear-gradient(135deg,#ffd6f0,#d5e1ff)', photo: '/assets/images/occasions/community-events-sm.webp' },
-  { label: 'Church Events', emoji: '⛪', tint: 'linear-gradient(135deg,#d2f4e4,#e9e0ff)' }
+  { label: 'Church Events', emoji: '⛪', tint: 'linear-gradient(135deg,#d2f4e4,#e9e0ff)', photo: '/assets/images/occasions/church-events-sm.webp' }
 ];
 
 /** Extra pictures on the Gallery page, after the service photos. */
@@ -32,7 +31,8 @@ export const GALLERY_EXTRAS: { label: string; src: string }[] = [
   { label: 'Family Days', src: '/assets/images/occasions/family-days-md.webp' },
   { label: 'Graduations', src: '/assets/images/occasions/graduations-md.webp' },
   { label: 'School Events', src: '/assets/images/occasions/school-events-md.webp' },
-  { label: 'Community Events', src: '/assets/images/occasions/community-events-md.webp' }
+  { label: 'Community Events', src: '/assets/images/occasions/community-events-md.webp' },
+  { label: 'Church Events', src: '/assets/images/occasions/church-events-md.webp' }
 ];
 
 /** Emoji for the round shortcut icons on the homepage, by service slug. */

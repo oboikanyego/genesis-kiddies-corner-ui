@@ -23,7 +23,9 @@ test('homepage', () => {
   for (const label of ['Kiddies Parties', 'Family Days', 'Graduations', 'School Events', 'Community Events', 'Church Events']) assert.ok(config.includes(`label: '${label}'`), label);
   assert.ok(config.includes("photo: '/assets/images/occasions/kiddies-parties-sm.webp'"));
   assert.ok(config.includes("photo: '/assets/images/occasions/family-days-sm.webp'"));
-  for (const slug of ['graduations', 'school-events', 'community-events']) assert.ok(config.includes(`photo: '/assets/images/occasions/${slug}-sm.webp'`), slug);
+  const occasions = config.slice(config.indexOf('export const OCCASIONS'), config.indexOf('/** Extra pictures'));
+  assert.equal((occasions.match(/photo: '/g) || []).length, 6, 'every occasion tile should have a picture');
+  for (const slug of ['graduations', 'school-events', 'community-events', 'church-events']) assert.ok(config.includes(`photo: '/assets/images/occasions/${slug}-sm.webp'`), slug);
 });
 
 test('services list and cards', () => {
