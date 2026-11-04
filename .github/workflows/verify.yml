@@ -19,6 +19,7 @@ jobs:
       - run: npm run test:photos
       - run: npm run test:design
       - run: npm run test:format
+      - run: npm run test:brand
       - run: npm run typecheck
       - run: npm run build
         env:

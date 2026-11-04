@@ -20,7 +20,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
 @if(!loggedIn()){
 <div class="admin-login-wrap">
   <form class="surface-card admin-login" (ngSubmit)="login()" aria-label="Owner sign in">
-    <div class="admin-login-icon" aria-hidden="true">🔐</div>
+    <div class="admin-login-icon" aria-hidden="true"><img src="/assets/images/brand/icon-120.webp" alt="" width="60" height="60"/></div>
     <div class="eyebrow pink-text">OWNER'S SPACE</div>
     <h1>Welcome back!</h1>
     <p>Sign in to manage requests for The Genesis Kiddies Corner.</p>
@@ -33,7 +33,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
 }@else{
 <div class="admin-layout">
   <aside class="admin-sidebar" aria-label="Owner dashboard">
-    <a class="admin-brand" routerLink="/" aria-label="Back to the website"><app-logo/></a>
+    <a class="admin-brand" routerLink="/" aria-label="Back to the website"><app-logo [large]="true"/></a>
     <nav class="admin-tab-list" aria-label="Admin sections">
       <button type="button" class="admin-tab" [class.selected]="tab()==='dashboard'" [attr.aria-current]="tab()==='dashboard' ? 'page' : null" (click)="go('dashboard')"><app-icon name="dashboard" [size]="21"/><span>Dashboard</span></button>
       <button type="button" class="admin-tab" [class.selected]="tab()==='bookings'" [attr.aria-current]="tab()==='bookings' ? 'page' : null" (click)="go('bookings')"><app-icon name="bookings" [size]="21"/><span>Bookings</span></button>

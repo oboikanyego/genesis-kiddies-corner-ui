@@ -14,7 +14,10 @@ The pack had no pictures for these, so four more were generated in the same brig
 - *School Events*: a happy school fun day on a sunny field; children in school uniforms and sports bibs cheering with a friendly teacher, a bouncy castle, bunting and balloons.
 - *Community Events*: a lively community fun day in a sunny park; families and children around event tents and food stalls, a small decorated stage, a bouncy castle, face paint, balloons.
 
-Still missing: a picture for *Church Events* (the Canva credits ran out before it could be generated) and the official logo file.
+Still missing: a picture for *Church Events* (the Canva credits ran out before it could be generated).
+
+### Logo and icon (supplied 4 November 2026)
+The logo is the transparent version extracted from the original design board. The icon (a "G" with a crown) was generated for the owner; the supplied pack says it is a transparent version for website headers, favicons and flexible uses, and that app stores may need an opaque square background. The website uses them as follows: logo in the header, on the phone homepage and in the owner sidebar; icon as the browser-tab icon, the iPhone home-screen icon (placed on white because iPhones turn transparency black), the app manifest and the owner sign-in card.
 
 ## Earlier stand-in photos (replaced by the images above)
 Genesis Kiddies Corner uses real licensed photographic **examples**, not photos of the exact available inventory. Actual setup may differ; upload photographs of your owned equipment when ready. Stored URLs point to hosted copies in Cloudinary rather than relying on remote stock providers' hotlinks.

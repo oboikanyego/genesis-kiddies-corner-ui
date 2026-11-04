@@ -80,7 +80,7 @@ export class MyBookingsPage {
   photo(b:Booking):string{
     const first=b.items[0];
     const service=this.services().find(s=>s._id===first?.serviceId)||this.services().find(s=>s.name===first?.name);
-    return service?service.image:servicePhotoFor({slug:'',image:''})||'assets/favicon.svg';
+    return service?service.image:servicePhotoFor({slug:'',image:''})||'/assets/images/brand/icon-120.webp';
   }
   toggle(reference:string){this.open.set(this.open()===reference?null:reference);}
   forget(reference:string){this.api.forgetBooking(reference);this.bookings.set(this.bookings().filter(b=>b.reference!==reference));this.open.set(null);}

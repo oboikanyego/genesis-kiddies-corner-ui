@@ -47,17 +47,17 @@ Run `npm run test:env` to test the configuration generator.
 - **Review stars** ("4.9 (28 reviews)") are only shown when the owner has entered a real rating and review count for a service. No invented reviews are shown.
 - **Pictures** that came with the design are in `src/assets/images` (homepage banner, the services, five of the six occasions and the round shortcut icons), each in light WebP sizes: `-lg` for the details page, `-md` for cards, `-sm` for thumbnails. They are AI-generated illustrations, not photographs of your own equipment, so the site labels them *Illustrative image* and says the exact equipment is confirmed by the owner. See `SERVICE_PHOTO_SOURCES.md` and `src/assets/images/README.md`.
 - **Using your own photos**: an image you have chosen for a service in the database is never replaced. To change a design picture for everyone, overwrite the files with the same names.
-- **Still to supply**: a picture for *Church Events* (add its path in `src/app/core/site-config.ts`; until then that tile shows a coloured emoji tile) and the official logo file.
+- **Still to supply**: a picture for *Church Events* (add its path in `src/app/core/site-config.ts`; until then that tile shows a coloured emoji tile).
 - **Popcorn Machine and Candy Floss Machine** pictures are included too. Those two services are hidden because the design lists six services; switch them on in Admin → Services and their pictures appear.
 - **Homepage banner**: `src/assets/images/hero/` (`HERO_IMAGES` in `src/app/core/service-photos.ts`).
 - **Contact page**: fill in `SITE.contact` in `site-config.ts` (phone, WhatsApp, email, area). Empty values are hidden.
-- **Logo**: drawn in `src/app/components/logo.component.ts` (SVG). Replace it with the official logo file when you have one.
+- **Logo and icon**: the official logo (header, phone homepage and owner sidebar) and the icon (browser tab, iPhone home-screen icon, app manifest and the owner sign-in card) are in `src/assets/images/brand/`, with `favicon.ico`, `apple-touch-icon.png` and `manifest.webmanifest` in `public/`. To change them, overwrite the files with the same names.
 
 ## Scope
 MVP deliberately excludes online payments, customer sign-ups, messaging, analytics, invoicing and unnecessary integrations. Admin is a single owner account configured by environment variables.
 
 ## Tests
-`npm run test:env`, `test:scroll`, `test:admin-mobile`, `test:admin-login`, `test:blocked-dates`, `test:photos`, `test:design`, `test:format` and `npm run typecheck` all run in CI (`.github/workflows/verify.yml`).
+`npm run test:env`, `test:scroll`, `test:admin-mobile`, `test:admin-login`, `test:blocked-dates`, `test:photos`, `test:design`, `test:format`, `test:brand` and `npm run typecheck` all run in CI (`.github/workflows/verify.yml`).
 
 ## Scrolling and page layout
 
