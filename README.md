@@ -45,9 +45,11 @@ Run `npm run test:env` to test the configuration generator.
 ## Text, prices and photos
 - **Service names, texts and prices** come from the API (`genesis-kiddies-corner-api/src/lib/serviceContent.ts`, copied from the design). The offline preview in `src/app/core/demo-data.ts` has the same text. `npm run test:design` fails if the approved texts are changed by accident.
 - **Review stars** ("4.9 (28 reviews)") are only shown when the owner has entered a real rating and review count for a service. No invented reviews are shown.
-- **Service photos**: licensed stock photos hosted on Cloudinary (see `SERVICE_PHOTO_SOURCES.md`), mapped by service in `src/app/core/service-photos.ts`. The *Stall & Sales Service* currently uses a stand-in photo. Upload your own photos and replace the URLs. An owner-chosen image URL on a service always wins.
-- **Homepage banner** photo: `HERO_PHOTO` in `service-photos.ts`.
-- **Perfect for Every Occasion** tiles: colourful tiles by default. Add a `photo` URL to an entry in `src/app/core/site-config.ts` to show a photograph instead.
+- **Pictures** that came with the design are in `src/assets/images` (homepage banner, the services, two occasions and the round shortcut icons), each in light WebP sizes: `-lg` for the details page, `-md` for cards, `-sm` for thumbnails. They are AI-generated illustrations, not photographs of your own equipment, so the site labels them *Illustrative image* and says the exact equipment is confirmed by the owner. See `SERVICE_PHOTO_SOURCES.md` and `src/assets/images/README.md`.
+- **Using your own photos**: an image you have chosen for a service in the database is never replaced. To change a design picture for everyone, overwrite the files with the same names.
+- **Still to supply**: pictures for *Graduations*, *School Events*, *Community Events* and *Church Events* (add each one's path in `src/app/core/site-config.ts`), a real picture for the *Stall & Sales Service* (it currently shows a crop of the popcorn stall), and the official logo file.
+- **Popcorn Machine and Candy Floss Machine** pictures are included too. Those two services are hidden because the design lists six services; switch them on in Admin → Services and their pictures appear.
+- **Homepage banner**: `src/assets/images/hero/` (`HERO_IMAGES` in `src/app/core/service-photos.ts`).
 - **Contact page**: fill in `SITE.contact` in `site-config.ts` (phone, WhatsApp, email, area). Empty values are hidden.
 - **Logo**: drawn in `src/app/components/logo.component.ts` (SVG). Replace it with the official logo file when you have one.
 

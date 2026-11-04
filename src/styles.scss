@@ -174,9 +174,9 @@ ion-app > .site-scroll {
 /* ==========================================================================
    6. Home
    ========================================================================== */
-.hero{position:relative;min-height:560px;display:flex;align-items:center;overflow:hidden;background:#cfe9ff}
-.hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%}
-.hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,.88) 32%,rgba(255,255,255,.4) 58%,rgba(255,255,255,0) 80%)}
+.hero{position:relative;min-height:560px;display:flex;align-items:center;overflow:hidden;background:linear-gradient(100deg,#f1f9ff 0%,#dcefff 55%,#c9e7ff 100%)}
+.hero-photo{position:absolute;top:0;right:0;width:64%;height:100%;object-fit:cover;object-position:46% 30%;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 26%);mask-image:linear-gradient(90deg,transparent 0,#000 26%)}
+.hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,.88) 40%,rgba(255,255,255,.4) 53%,rgba(255,255,255,0) 64%)}
 .hero-inner{position:relative;z-index:1;width:100%;padding-top:64px;padding-bottom:120px}
 .hero-logo{display:none}
 .hero h1{font:800 clamp(40px,5.2vw,68px)/1.1 var(--font);letter-spacing:-.035em;margin:0 0 22px;color:var(--ink)}
@@ -191,7 +191,8 @@ ion-app > .site-scroll {
 .shortcuts a:nth-child(5){border-right:0}
 .shortcuts a:nth-child(n+6){display:none}
 .shortcuts a:hover .shortcut-icon{transform:translateY(-3px)}
-.shortcut-icon{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;font-size:32px;transition:transform .15s}
+.shortcut-icon{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;font-size:32px;padding:3px;overflow:hidden;transition:transform .15s}
+.shortcut-icon img{width:100%;height:100%;border-radius:50%;object-fit:cover}
 .tone-0{background:#ffe9ad}.tone-1{background:#bfe4ff}.tone-2{background:#c7ecff}.tone-3{background:#fff0b3}.tone-4{background:#ffd2e6}.tone-5{background:#ffdcbf}
 
 .occasions{padding-top:48px;padding-bottom:72px}
@@ -372,9 +373,9 @@ ion-app > .site-scroll {
 .contact-list li{display:flex;align-items:center;gap:12px;font:600 16px var(--font)}
 .contact-list .icon{color:var(--pink)}
 .gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-.gallery-tile{position:relative;display:block;border-radius:16px;overflow:hidden;aspect-ratio:4/3;background:#e9edf5}
+.gallery-tile{position:relative;display:block;margin:0;border-radius:16px;overflow:hidden;aspect-ratio:4/3;background:#e9edf5}
 .gallery-tile img{width:100%;height:100%;object-fit:cover}
-.gallery-tile span{position:absolute;left:0;right:0;bottom:0;padding:30px 14px 12px;background:linear-gradient(transparent,rgba(10,20,60,.72));color:#fff;font:700 15px var(--font)}
+.gallery-tile span,.gallery-tile figcaption{position:absolute;left:0;right:0;bottom:0;padding:30px 14px 12px;background:linear-gradient(transparent,rgba(10,20,60,.72));color:#fff;font:700 15px var(--font)}
 .photo-note{margin:16px 0 0;font-size:13px;color:var(--muted);text-align:center}
 .more-wrap{padding-top:8px;padding-bottom:40px}
 .more-list{background:#fff;border-radius:18px;box-shadow:var(--shadow-sm);overflow:hidden}
@@ -671,8 +672,8 @@ ion-datetime.blocked-date-calendar::part(calendar-day disabled) { opacity:.35; t
 
   /* home */
   .hero{min-height:0;align-items:flex-start}
-  .hero-photo{object-position:center}
-  .hero-shade{background:linear-gradient(180deg,rgba(255,255,255,.9) 0%,rgba(255,255,255,.72) 55%,rgba(255,255,255,.35) 100%)}
+  .hero-photo{width:100%;left:0;-webkit-mask-image:none;mask-image:none;object-position:50% 25%}
+  .hero-shade{background:linear-gradient(180deg,rgba(255,255,255,.93) 0%,rgba(255,255,255,.86) 52%,rgba(255,255,255,.5) 100%)}
   .hero-inner{text-align:center;padding-top:calc(30px + env(safe-area-inset-top));padding-bottom:90px}
   .hero-logo{display:block;margin:0 auto 20px;width:max-content}
   .hero h1{font-size:clamp(32px,9.4vw,44px);margin-bottom:16px}

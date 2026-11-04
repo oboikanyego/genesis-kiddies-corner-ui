@@ -7,6 +7,7 @@ import { formatDate, formatMoney, formatTimeRange, todayIso } from '../core/form
 import { IconComponent } from '../components/icon.component';
 import { DateFieldComponent } from '../components/date-field.component';
 import { QtyComponent } from '../components/qty.component';
+import { PhotoPipe } from '../components/photo.pipe';
 
 type Step = 1 | 2 | 3;
 const STEP_FIELDS: Record<Step, string[]> = {
@@ -14,7 +15,7 @@ const STEP_FIELDS: Record<Step, string[]> = {
   2: ['name', 'phone', 'email'],
   3: []
 };
-@Component({ selector:'app-booking', standalone:true, imports:[ReactiveFormsModule,RouterLink,IconComponent,DateFieldComponent,QtyComponent], template: `
+@Component({ selector:'app-booking', standalone:true, imports:[ReactiveFormsModule,RouterLink,IconComponent,DateFieldComponent,QtyComponent,PhotoPipe], template: `
 <header class="m-bar"><button type="button" class="m-back" (click)="back()" aria-label="Go back"><app-icon name="back" [size]="28"/></button><span></span><span></span></header>
 <div class="container booking-wrap">
   @if(!api.cart().length){
@@ -56,7 +57,7 @@ const STEP_FIELDS: Record<Step, string[]> = {
         </section>
         <section class="b-card b-summary">
           <h3>Your Booking</h3>
-          @for(i of api.cart();track i.service.slug+'-'+i.mode){<div class="sum-item"><img [src]="i.service.image" [alt]="i.service.name"/><div><b>{{i.service.name}}</b><small>{{i.quantity}} × {{i.mode}}</small></div></div>}
+          @for(i of api.cart();track i.service.slug+'-'+i.mode){<div class="sum-item"><img [src]="i.service.image | photo:'sm'" [alt]="i.service.name"/><div><b>{{i.service.name}}</b><small>{{i.quantity}} × {{i.mode}}</small></div></div>}
           <p class="sum-note">No payment is needed to submit your request.</p>
         </section>
       </div>
@@ -64,7 +65,7 @@ const STEP_FIELDS: Record<Step, string[]> = {
     @if(step()===3){
       <section class="b-card review">
         <h3>Your Booking</h3>
-        @for(i of api.cart();track i.service.slug+'-'+i.mode){<div class="review-item"><img [src]="i.service.image" [alt]="i.service.name"/><div><b>{{i.service.name}}</b><small>{{i.quantity}} × {{i.mode}}</small></div><span>{{i.service.price===null?'Price on request':money(i.service.price*i.quantity)}}</span></div>}
+        @for(i of api.cart();track i.service.slug+'-'+i.mode){<div class="review-item"><img [src]="i.service.image | photo:'sm'" [alt]="i.service.name"/><div><b>{{i.service.name}}</b><small>{{i.quantity}} × {{i.mode}}</small></div><span>{{i.service.price===null?'Price on request':money(i.service.price*i.quantity)}}</span></div>}
         <div class="review-total"><span>Estimated Total</span><strong>{{api.totalKnown()?money(api.total()):'To be quoted'}}</strong></div>
         <div class="review-block"><div class="review-head"><h3>Event Details</h3><button type="button" class="link-btn" (click)="go(1)">Edit</button></div>
           <dl><dt>Event Type</dt><dd>{{v.type}}</dd><dt>Event Date</dt><dd>{{fmtDate(v.date)}}</dd><dt>Time</dt><dd>{{fmtRange(v.startTime,v.endTime)}}</dd><dt>Event Location</dt><dd>{{v.location}}</dd><dt>Number of Kids (approx)</dt><dd>{{v.guestCount}}</dd>@if(v.notes){<dt>Special Instructions</dt><dd>{{v.notes}}</dd>}</dl></div>

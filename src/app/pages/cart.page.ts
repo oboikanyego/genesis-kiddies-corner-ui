@@ -5,7 +5,8 @@ import { CartItem } from '../core/models';
 import { formatMoney, formatWhen } from '../core/format';
 import { IconComponent } from '../components/icon.component';
 import { QtyComponent } from '../components/qty.component';
-@Component({ selector:'app-cart', standalone:true, imports:[RouterLink,IconComponent,QtyComponent], template: `
+import { PhotoPipe } from '../components/photo.pipe';
+@Component({ selector:'app-cart', standalone:true, imports:[RouterLink,IconComponent,QtyComponent,PhotoPipe], template: `
 <header class="m-bar"><a routerLink="/services" class="m-back" aria-label="Back to services"><app-icon name="back" [size]="28"/></a><h1>Your Booking</h1><span></span></header>
 <div class="container cart-wrap">
   <div class="cart-title"><h1>Your Booking</h1>@if(api.cart().length){<span class="count-pill">{{api.cart().length}} {{api.cart().length===1?'item':'items'}}</span>}</div>
@@ -15,7 +16,7 @@ import { QtyComponent } from '../components/qty.component';
     <section class="cart-card" aria-label="Selected services">
       @for(item of api.cart();track item.service.slug+'-'+item.mode; let i=$index){
         <article class="cart-item">
-          <img [src]="item.service.image" [alt]="item.service.name"/>
+          <img [src]="item.service.image | photo:'sm'" [alt]="item.service.name"/>
           <div class="cart-info">
             <h2>{{item.service.name}}</h2>
             <p class="cart-price">{{linePrice(item)}}</p>

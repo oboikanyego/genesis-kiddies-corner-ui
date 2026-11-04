@@ -7,8 +7,9 @@ import { Booking, ServiceItem } from '../core/models';
 import { formatMoney, formatWhen, isUpcoming, statusLabel } from '../core/format';
 import { servicePhotoFor } from '../core/service-photos';
 import { IconComponent } from '../components/icon.component';
+import { PhotoPipe } from '../components/photo.pipe';
 
-@Component({ selector:'app-my-bookings', standalone:true, imports:[ReactiveFormsModule,RouterLink,IconComponent], template:`
+@Component({ selector:'app-my-bookings', standalone:true, imports:[ReactiveFormsModule,RouterLink,IconComponent,PhotoPipe], template:`
 <header class="m-bar"><span></span><h1>My Bookings</h1><span></span></header>
 <section class="page-head"><div class="container"><h1>My Bookings</h1><p>Track the status of your bookings.</p></div></section>
 <div class="container mb-wrap">
@@ -20,7 +21,7 @@ import { IconComponent } from '../components/icon.component';
     @if(loading()&&!bookings().length){<p class="page-loading" role="status">Loading your bookings…</p>}
     @for(b of visible();track b.reference){
       <article class="mb-card">
-        <img class="mb-thumb" [src]="photo(b)" alt="" loading="lazy"/>
+        <img class="mb-thumb" [src]="photo(b) | photo:'sm'" alt="" loading="lazy"/>
         <div class="mb-main">
           <strong class="mb-ref">{{b.reference}}</strong>
           <span class="mb-type">{{b.event.type}}</span>

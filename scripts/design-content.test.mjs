@@ -21,6 +21,8 @@ test('homepage', () => {
   has('home', ['Making Every<br/>Event', 'Extra ', 'Special', 'Kiddies parties · Family days', ' · Graduation days', 'School events · Community events', ' · Church events', 'and more', '>Book Now</a>', 'Services</span></a>', 'Our ', 'Perfect for Every Occasion']);
   const config = read('core/site-config.ts');
   for (const label of ['Kiddies Parties', 'Family Days', 'Graduations', 'School Events', 'Community Events', 'Church Events']) assert.ok(config.includes(`label: '${label}'`), label);
+  assert.ok(config.includes("photo: '/assets/images/occasions/kiddies-parties-sm.webp'"));
+  assert.ok(config.includes("photo: '/assets/images/occasions/family-days-sm.webp'"));
 });
 
 test('services list and cards', () => {

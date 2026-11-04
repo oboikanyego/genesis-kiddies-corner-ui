@@ -1,5 +1,13 @@
-# Licensed service photos
+# Images
 
+## Current images (supplied with the design)
+`src/assets/images/` holds the images from the design's "Genesis Kiddies Corner — individual image pack": the homepage hero, mascot characters, jumping castles, slush machine, ice cream machine, face painting, popcorn machine, candy floss machine, kiddies parties and family days.
+
+As the pack's own README states, these are **AI-generated concept/illustrative images**, not photos of Genesis Kiddies Corner's equipment, staff or customers. The people and mascots shown are fictional. The site therefore labels them "Illustrative image — exact equipment confirmed by the owner", and they should not be presented as actual inventory. Replace them with your own photographs when you have them.
+
+They were converted to WebP for fast loading (`-lg` 1448 px wide, `-md` 720 px, `-sm` 320 px; round icons 160 px). The *Stall & Sales Service* uses a crop of the popcorn stall picture as a stand-in. No image has been supplied yet for the logo, Graduations, School Events, Community Events or Church Events.
+
+## Earlier stand-in photos (replaced by the images above)
 Genesis Kiddies Corner uses real licensed photographic **examples**, not photos of the exact available inventory. Actual setup may differ; upload photographs of your owned equipment when ready. Stored URLs point to hosted copies in Cloudinary rather than relying on remote stock providers' hotlinks.
 
 | Service | Source |

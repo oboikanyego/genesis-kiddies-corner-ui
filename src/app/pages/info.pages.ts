@@ -2,8 +2,9 @@ import { Component, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BookingApiService } from '../core/booking-api.service';
-import { SITE } from '../core/site-config';
+import { GALLERY_EXTRAS, SITE } from '../core/site-config';
 import { IconComponent } from '../components/icon.component';
+import { PhotoPipe } from '../components/photo.pipe';
 
 /** About: only says what the rest of the site already says. */
 @Component({ selector: 'app-about', standalone: true, imports: [RouterLink], template: `
@@ -21,15 +22,18 @@ import { IconComponent } from '../components/icon.component';
 </div></div>` })
 export class AboutPage {}
 
-@Component({ selector: 'app-gallery', standalone: true, imports: [AsyncPipe, RouterLink], template: `
+@Component({ selector: 'app-gallery', standalone: true, imports: [AsyncPipe, RouterLink, PhotoPipe], template: `
 <section class="page-head info-head"><div class="container"><h1>Gallery</h1><p>Take a look at what we bring to your event.</p></div></section>
 <div class="container info-wrap wide"><div class="gallery-grid">
   @for (s of (api.services$ | async); track s.slug) {
-    <a class="gallery-tile" [routerLink]="['/services', s.slug]"><img [src]="s.image" [alt]="s.name"/><span>{{s.name}}</span></a>
+    <a class="gallery-tile" [routerLink]="['/services', s.slug]"><img [src]="s.image | photo:'md'" [alt]="s.name"/><span>{{s.name}}</span></a>
+  }
+  @for (e of extras; track e.label) {
+    <figure class="gallery-tile"><img [src]="e.src" [alt]="e.label"/><figcaption>{{e.label}}</figcaption></figure>
   }
 </div>
-<p class="photo-note">Reference photos. The exact equipment is confirmed when we review your booking.</p></div>` })
-export class GalleryPage { api = inject(BookingApiService); }
+<p class="photo-note">Illustrative images. The exact equipment is confirmed when we review your booking.</p></div>` })
+export class GalleryPage { api = inject(BookingApiService); extras = GALLERY_EXTRAS; }
 
 @Component({ selector: 'app-contact', standalone: true, imports: [RouterLink, IconComponent], template: `
 <section class="page-head info-head"><div class="container"><h1>Contact</h1><p>We will review the availability and contact you soon.</p></div></section>

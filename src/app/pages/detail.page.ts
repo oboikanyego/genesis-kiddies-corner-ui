@@ -9,14 +9,15 @@ import { formatMoney, todayIso } from '../core/format';
 import { IconComponent } from '../components/icon.component';
 import { DateFieldComponent } from '../components/date-field.component';
 import { QtyComponent } from '../components/qty.component';
-@Component({ selector:'app-detail', standalone:true, imports:[AsyncPipe,RouterLink,ReactiveFormsModule,IconComponent,DateFieldComponent,QtyComponent], template: `
+import { PhotoPipe } from '../components/photo.pipe';
+@Component({ selector:'app-detail', standalone:true, imports:[AsyncPipe,RouterLink,ReactiveFormsModule,IconComponent,DateFieldComponent,QtyComponent,PhotoPipe], template: `
 <div class="container detail-page">
   @if(service$ | async; as service){
     <a routerLink="/services" class="back-link"><app-icon name="arrow-left" [size]="16" [stroke]="2.4"/> Back to Services</a>
     <div class="detail-grid">
       <div class="detail-left">
         <div class="detail-hero">
-          <img [src]="service.image" [alt]="service.name" decoding="async" fetchpriority="high"/>
+          <img [src]="service.image | photo:'lg'" [alt]="service.name" decoding="async" fetchpriority="high"/>
           <a routerLink="/services" class="round-btn m-only left" aria-label="Back to services"><app-icon name="back" [size]="22" [stroke]="2.4"/></a>
           <button type="button" class="round-btn m-only right" (click)="share(service)" aria-label="Share this service"><app-icon name="share" [size]="20"/></button>
         </div>
@@ -33,7 +34,7 @@ import { QtyComponent } from '../components/qty.component';
           <div class="included"><h2>What's Included</h2>
             <ul>@for(inclusion of service.includes;track inclusion){<li><app-icon name="check" [size]="19" [stroke]="2.6"/>{{inclusion}}</li>}</ul>
           </div>
-          <p class="service-image-disclaimer">Reference photo — exact equipment confirmed by the owner</p>
+          <p class="service-image-disclaimer">Illustrative image — exact equipment confirmed by the owner</p>
         </div>
       </div>
       <aside class="book-panel" [class.open]="sheetOpen()" aria-labelledby="book-title">

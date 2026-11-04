@@ -11,11 +11,12 @@ import { environment } from '../../environments/environment';
 import { IconComponent } from '../components/icon.component';
 import { LogoComponent } from '../components/logo.component';
 import { MonthCalendarComponent } from '../components/month-calendar.component';
+import { PhotoPipe } from '../components/photo.pipe';
 
 type AdminTab = 'dashboard' | 'bookings' | 'calendar' | 'services' | 'settings';
 const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings: 'Bookings', calendar: 'Calendar', services: 'Services', settings: 'Settings' };
 
-@Component({selector:'app-admin',standalone:true,imports:[FormsModule,DatePipe,RouterLink,IonicModule,IconComponent,LogoComponent,MonthCalendarComponent],template:`
+@Component({selector:'app-admin',standalone:true,imports:[FormsModule,DatePipe,RouterLink,IonicModule,IconComponent,LogoComponent,MonthCalendarComponent,PhotoPipe],template:`
 @if(!loggedIn()){
 <div class="admin-login-wrap">
   <form class="surface-card admin-login" (ngSubmit)="login()" aria-label="Owner sign in">
@@ -119,7 +120,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
 
     @if(tab()==='services'){
     <div class="admin-services"><div class="admin-services-intro"><h2>Available services</h2><p>Control stock, pricing, availability and whether an item appears in the customer catalogue. Prices are optional.</p></div>
-    @for(item of services();track item._id){<article class="panel manage-service"><img [src]="photo(item)" [alt]="item.name"/><div class="manage-content"><div class="manage-title"><h3>{{item.name}}</h3><span class="category-tag">{{item.category}}</span></div><div class="manage-fields"><label><span>Price (R)</span><input type="number" min="0" [ngModel]="item.price" (ngModelChange)="item.price=$event===null||$event===''?null:+$event" placeholder="On request"/></label><label><span>Available stock</span><input type="number" min="1" [(ngModel)]="item.stock"/></label><div class="blocked-date-editor">
+    @for(item of services();track item._id){<article class="panel manage-service"><img [src]="photo(item) | photo:'sm'" [alt]="item.name"/><div class="manage-content"><div class="manage-title"><h3>{{item.name}}</h3><span class="category-tag">{{item.category}}</span></div><div class="manage-fields"><label><span>Price (R)</span><input type="number" min="0" [ngModel]="item.price" (ngModelChange)="item.price=$event===null||$event===''?null:+$event" placeholder="On request"/></label><label><span>Available stock</span><input type="number" min="1" [(ngModel)]="item.stock"/></label><div class="blocked-date-editor">
       <div class="blocked-date-heading"><span class="blocked-date-label">Blocked dates</span><span class="blocked-date-counter">{{item.blockedDates.length}} / 100</span></div>
       <button type="button" class="blocked-date-trigger" (click)="openBlockedDateCalendar(item)" [disabled]="item.blockedDates.length >= 100" [attr.aria-label]="'Open blocked dates calendar for ' + item.name">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>

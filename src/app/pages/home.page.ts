@@ -3,12 +3,12 @@ import { AsyncPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BookingApiService } from '../core/booking-api.service';
 import { DEMO_SERVICES } from '../core/demo-data';
-import { HERO_PHOTO } from '../core/service-photos';
+import { HERO_IMAGES, SERVICE_ICONS } from '../core/service-photos';
 import { OCCASIONS, SERVICE_EMOJI } from '../core/site-config';
 import { LogoComponent } from '../components/logo.component';
 @Component({ selector:'app-home', standalone:true, imports:[AsyncPipe,RouterLink,LogoComponent], template: `
 <section class="hero">
-  <img class="hero-photo" [src]="heroPhoto" alt="" fetchpriority="high"/>
+  <img class="hero-photo" [src]="hero.desktop" [attr.srcset]="hero.phone + ' 800w, ' + hero.desktop + ' 1448w'" sizes="(max-width: 899px) 100vw, 64vw" alt="" fetchpriority="high"/>
   <div class="hero-shade"></div>
   <div class="container hero-inner">
     <a routerLink="/" class="hero-logo" aria-label="The Genesis Kiddies Corner"><app-logo [large]="true"/></a>
@@ -20,7 +20,7 @@ import { LogoComponent } from '../components/logo.component';
 <section class="container shortcuts-wrap" aria-label="Our services">
   <div class="shortcuts">
     @for (s of ((api.services$ | async) ?? demo).slice(0, 6); track s.slug; let i = $index) {
-      <a [routerLink]="['/services', s.slug]"><span class="shortcut-icon tone-{{i % 6}}" aria-hidden="true">{{emoji[s.slug] || '🎉'}}</span><span class="shortcut-label">{{s.name}}</span></a>
+      <a [routerLink]="['/services', s.slug]"><span class="shortcut-icon tone-{{i % 6}}" aria-hidden="true">@if (icons[s.slug]) { <img [src]="icons[s.slug]" alt="" width="66" height="66"/> } @else { {{emoji[s.slug] || '🎉'}} }</span><span class="shortcut-label">{{s.name}}</span></a>
     }
   </div>
 </section>
@@ -35,7 +35,8 @@ import { LogoComponent } from '../components/logo.component';
 ` })
 export class HomePage {
   api = inject(BookingApiService);
-  heroPhoto = HERO_PHOTO;
+  hero = HERO_IMAGES;
+  icons = SERVICE_ICONS;
   occasions = OCCASIONS;
   emoji = SERVICE_EMOJI;
   /** Shown instantly while the live list loads, so the page never jumps. */
