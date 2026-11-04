@@ -3,6 +3,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 import { BookingApiService } from '../core/booking-api.service';
+import { bookingErrorMessage } from '../core/booking-guard';
+import { phoneValidator } from '../core/validators';
 import { Booking, ServiceItem } from '../core/models';
 import { formatMoney, formatWhen, isUpcoming, statusLabel } from '../core/format';
 import { servicePhotoFor } from '../core/service-photos';
@@ -45,20 +47,35 @@ import { PhotoPipe } from '../components/photo.pipe';
       <div class="empty-state">
         <app-icon name="bookings" [size]="44" [stroke]="1.6"/>
         <h2>{{tab()==='upcoming'?'No upcoming bookings':'No past bookings yet'}}</h2>
-        <p>{{bookings().length?'Check the other tab for your other bookings.':'Bookings you make on this device will appear here.'}}</p>
+        <p>{{bookings().length?'Check the other tab for your other bookings.':'Bookings you make on this device will appear here. Booked somewhere else? Use "Find a booking made on another device" below.'}}</p>
         <a class="btn btn-pink btn-pill" routerLink="/services">Browse Services</a>
       </div>
     }
   </div>
   <details class="lookup">
     <summary>Find a booking made on another device</summary>
-    <form [formGroup]="form" (ngSubmit)="lookup()" novalidate>
-      <p>Enter the booking reference and email address from your confirmation.</p>
-      <div class="field"><label for="l-ref">Booking Reference</label><input id="l-ref" formControlName="reference" placeholder="GKC-20261115-001" autocapitalize="characters"/></div>
-      <div class="field"><label for="l-mail">Email Address</label><input id="l-mail" formControlName="email" type="email" inputmode="email" placeholder="you@example.com"/></div>
-      <button type="submit" class="btn btn-pink btn-block" [disabled]="form.invalid||busy()">{{busy()?'Searching...':'Find My Booking'}}</button>
-      @if(error()){<div class="notice error" role="alert">{{error()}}</div>}
-    </form>
+    <div class="lookup-modes" role="tablist" aria-label="How to find your bookings">
+      <button type="button" role="tab" id="mode-phone" [attr.aria-selected]="mode()==='phone'" [class.active]="mode()==='phone'" (click)="setMode('phone')">Email &amp; phone</button>
+      <button type="button" role="tab" id="mode-reference" [attr.aria-selected]="mode()==='reference'" [class.active]="mode()==='reference'" (click)="setMode('reference')">Booking reference</button>
+    </div>
+    @if(mode()==='phone'){
+      <form [formGroup]="findForm" (ngSubmit)="findByPhone()" novalidate role="tabpanel" aria-labelledby="mode-phone">
+        <p>Enter the email address and the mobile number you booked with. Both must match.</p>
+        <div class="field"><label for="f-mail">Email Address</label><input id="f-mail" formControlName="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com"/>@if(findBad('email')){<small class="field-error">Please enter a valid email address.</small>}</div>
+        <div class="field"><label for="f-phone">Mobile Number</label><input id="f-phone" formControlName="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="e.g. 082 123 4567"/>@if(findBad('phone')){<small class="field-error">Please enter a valid mobile number.</small>}</div>
+        <button type="submit" class="btn btn-pink btn-block" [disabled]="busy()">{{busy()?'Searching...':'Find My Bookings'}}</button>
+        @if(found()){<div class="notice success" role="status">{{found()}}</div>}
+        @if(error()){<div class="notice error" role="alert">{{error()}}</div>}
+      </form>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="lookup()" novalidate role="tabpanel" aria-labelledby="mode-reference">
+        <p>Enter the booking reference and email address from your confirmation.</p>
+        <div class="field"><label for="l-ref">Booking Reference</label><input id="l-ref" formControlName="reference" placeholder="GKC-20261115-001" autocapitalize="characters"/></div>
+        <div class="field"><label for="l-mail">Email Address</label><input id="l-mail" formControlName="email" type="email" inputmode="email" placeholder="you@example.com"/></div>
+        <button type="submit" class="btn btn-pink btn-block" [disabled]="form.invalid||busy()">{{busy()?'Searching...':'Find My Booking'}}</button>
+        @if(error()){<div class="notice error" role="alert">{{error()}}</div>}
+      </form>
+    }
   </details>
 </div>` })
 export class MyBookingsPage {
@@ -68,6 +85,11 @@ export class MyBookingsPage {
   private services=signal<ServiceItem[]>([]);
   money=formatMoney; label=statusLabel;
   form=this.fb.nonNullable.group({reference:['',Validators.required],email:['',[Validators.required,Validators.email]]});
+  /** "Find my bookings": the email address and the mobile number they booked with, both of which must match. */
+  mode=signal<'phone'|'reference'>('phone'); found=signal('');
+  findForm=this.fb.nonNullable.group({email:['',[Validators.required,Validators.email]],phone:['',[Validators.required,phoneValidator]]});
+  findBad(name:string):boolean{const c=this.findForm.get(name);return !!c&&c.invalid&&(c.touched||c.dirty);}
+  setMode(mode:'phone'|'reference'){this.mode.set(mode);this.error.set('');this.found.set('');}
   visible=computed(()=>{
     const list=this.bookings().filter(b=>this.tab()==='upcoming'?isUpcoming(b):!isUpcoming(b));
     return [...list].sort((a,b)=>this.tab()==='upcoming'?a.event.date.localeCompare(b.event.date)||a.event.startTime.localeCompare(b.event.startTime):b.event.date.localeCompare(a.event.date));
@@ -101,6 +123,29 @@ export class MyBookingsPage {
       this.loading.set(false);
     });
   }
+  /** The bookings that were found are above the look-up form: bring them into view (on a phone they would otherwise be off screen). */
+  private showResults(){setTimeout(()=>document.querySelector('.tabs')?.scrollIntoView({block:'start'}));}
+  findByPhone(){
+    if(this.findForm.invalid){this.findForm.markAllAsTouched();return;}
+    this.busy.set(true);this.error.set('');this.found.set('');
+    const v=this.findForm.getRawValue();
+    this.api.lookupBookings(v.email.trim(),v.phone.trim()).subscribe({
+      next:r=>{
+        this.busy.set(false);
+        if(!r.items.length){this.error.set("We couldn't find a booking with that email address and mobile number. Check them, or use your booking reference instead.");return;}
+        r.items.forEach(b=>this.api.rememberBooking(b.reference,v.email,b));
+        const byRef=new Map(this.bookings().map(b=>[b.reference,b]));
+        r.items.forEach(b=>byRef.set(b.reference,b));
+        this.bookings.set([...byRef.values()]);
+        this.tab.set(r.items.some(b=>isUpcoming(b))?'upcoming':'past');
+        this.open.set(r.items.length===1?r.items[0].reference:null);
+        this.found.set(`Found ${r.items.length} ${r.items.length===1?'booking':'bookings'}. ${r.items.length===1?'It is':'They are'} now saved on this device.`);
+        this.findForm.reset({email:'',phone:''});
+        this.showResults();
+      },
+      error:e=>{this.busy.set(false);this.error.set(bookingErrorMessage(e));}
+    });
+  }
   lookup(){
     if(this.form.invalid)return;
     this.busy.set(true);this.error.set('');
@@ -111,6 +156,7 @@ export class MyBookingsPage {
         this.bookings.set([b,...this.bookings().filter(x=>x.reference!==b.reference)]);
         this.tab.set(isUpcoming(b)?'upcoming':'past');this.open.set(b.reference);
         this.form.reset({reference:'',email:''});this.busy.set(false);
+        this.showResults();
       },
       error:e=>{this.error.set(e?.error?.message||'Unable to retrieve booking right now.');this.busy.set(false);}
     });

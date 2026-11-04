@@ -86,9 +86,14 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
 
     @if(tab()==='bookings'){
       <div class="panel admin-table-card"><div class="panel-header admin-table-heading"><div><h2>Booking requests</h2><p>Approve or decline incoming requests</p></div><select [(ngModel)]="filter" (change)="page.set(1);loadBookings()" aria-label="Filter bookings"><option value="">All statuses</option><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="declined">Declined</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></div>
+      <div class="booking-search">
+        <label class="visually-hidden" for="booking-search">Search bookings</label>
+        <span class="booking-search-box"><app-icon name="search" [size]="18"/><input id="booking-search" type="search" name="booking-search" [ngModel]="searchText()" (ngModelChange)="onSearch($event)" placeholder="Search by name, email, phone or reference" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="100"/>@if(searchText()){<button type="button" class="search-clear" (click)="clearSearch()" aria-label="Clear search"><app-icon name="close" [size]="16"/></button>}</span>
+        @if(searching()){<p class="search-summary" role="status">{{total()}} {{total()===1?'booking matches':'bookings match'}} “{{searchText().trim()}}”</p>}
+      </div>
       <div class="table-scroll"><table class="admin-table"><thead><tr><th>Booking</th><th>Customer</th><th>Event</th><th>Services</th><th>Status</th><th>Actions</th></tr></thead><tbody>
       @for(b of bookings();track b._id){<tr><td><b>{{b.reference}}</b><small>{{b.createdAt | date:'mediumDate'}}</small></td><td><b>{{b.customer?.name}}</b><small>{{b.customer?.email}}</small><small>{{b.customer?.phone}}</small></td><td><b>{{b.event.type}}</b><small>{{when(b)}}</small><small>{{b.event.location}}</small></td><td>@for(i of b.items;track i.serviceId){<small>{{i.quantity}}× {{i.name}} ({{i.mode}})</small>}</td><td><span class="chip chip-{{b.status}}">{{label(b.status)}}</span></td><td><div class="table-actions"><button class="tiny-btn view-btn" (click)="selected.set(b)">View</button>@if(b.status==='pending'){<button class="tiny-btn green-btn" (click)="setStatus(b,'confirmed')" [disabled]="busy()">Approve</button><button class="tiny-btn red-btn" (click)="setStatus(b,'declined')" [disabled]="busy()">Decline</button>}@if(b.status==='confirmed'){<button class="tiny-btn green-btn" (click)="setStatus(b,'completed')" [disabled]="busy()">Complete</button><button class="tiny-btn red-btn" (click)="setStatus(b,'cancelled')" [disabled]="busy()">Cancel</button>}</div></td></tr>}
-      </tbody></table></div>@if(!bookings().length){<div class="empty-admin">No booking requests found.</div>}
+      </tbody></table></div>@if(!bookings().length){<div class="empty-admin">{{searching()?'No bookings match your search.':'No booking requests found.'}}</div>}
       <div class="pagination"><button (click)="page.set(page()-1);loadBookings()" [disabled]="page()===1">← Previous</button><span>Page {{page()}} of {{pages()||1}}</span><button (click)="page.set(page()+1);loadBookings()" [disabled]="page()>=pages()">Next →</button></div>
       </div>
     }
@@ -219,7 +224,10 @@ export class AdminPage {
     {key:'email',label:'Email address',type:'email',mode:'email',placeholder:'e.g. hello@yourbusiness.co.za',max:180},
     {key:'area',label:'Area we serve',type:'text',mode:'text',placeholder:'e.g. Johannesburg and surrounds',max:120}
   ];
-  bookings=signal<Booking[]>([]); services=signal<ServiceItem[]>([]); filter=''; page=signal(1); pages=signal(1);
+  bookings=signal<Booking[]>([]); services=signal<ServiceItem[]>([]); filter=''; page=signal(1); pages=signal(1); total=signal(0);
+  /** The search box above the booking list: looks in name, email, phone number (any way it was written) and reference. One character is not a search. */
+  searchText=signal(''); searching=computed(()=>this.searchText().trim().length>=2);
+  private searchTimer:any=null; private bookingsRequest=0;
   calMonth=signal(todayIso().slice(0,7)); calItems=signal<Booking[]>([]); calSelected=signal<string|null>(null);
   selected=signal<Booking|null>(null);
   apiUrl=environment.apiUrl; money=formatMoney; label=statusLabel;
@@ -251,7 +259,16 @@ export class AdminPage {
     if(tab==='services')this.api.adminServices().subscribe({next:r=>this.services.set(r),error:e=>this.handleError(e)});
     if(tab==='settings')this.loadContact();
   }
-  loadBookings(){this.api.adminBookings(this.filter||undefined,this.page()).subscribe({next:r=>{this.bookings.set(r.items);this.pages.set(r.pages);},error:e=>this.handleError(e)});}
+  loadBookings(){
+    const request=++this.bookingsRequest;   // while typing, only the answer to the latest request is used
+    const search=this.searching()?this.searchText().trim():undefined;
+    this.api.adminBookings(this.filter||undefined,this.page(),search).subscribe({
+      next:r=>{if(request!==this.bookingsRequest)return;this.bookings.set(r.items);this.pages.set(r.pages);this.total.set(r.total);},
+      error:e=>{if(request===this.bookingsRequest)this.handleError(e);}
+    });
+  }
+  onSearch(text:string){this.searchText.set(text);clearTimeout(this.searchTimer);this.searchTimer=setTimeout(()=>{this.page.set(1);this.loadBookings();},300);}
+  clearSearch(){this.searchText.set('');clearTimeout(this.searchTimer);this.page.set(1);this.loadBookings();}
   loadCalendar(){
     const month=this.calMonth();
     this.api.adminCalendar(month).subscribe({

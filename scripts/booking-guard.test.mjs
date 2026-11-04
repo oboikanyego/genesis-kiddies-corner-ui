@@ -53,6 +53,7 @@ test('the booking page asks for a form token when it opens, sends it back, and r
 });
 
 test('the phone number box uses the same rule as the API', () => {
-  has(read('app/pages/booking.page.ts'), ["phone:['',[Validators.required,phoneValid]]", 'isValidPhoneNumber(String(c.value).trim())']);
+  has(read('app/pages/booking.page.ts'), ["phone:['',[Validators.required,phoneValidator]]", "import { phoneValidator } from '../core/validators';"]);
+  has(read('app/core/validators.ts'), ['isValidPhoneNumber(String(control.value).trim())', '{ phone: true }']);
   assert.ok(!read('app/pages/booking.page.ts').includes('Validators.minLength(9)'), 'the old length-only check should be gone');
 });

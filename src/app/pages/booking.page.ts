@@ -1,11 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 import { BookingApiService } from '../core/booking-api.service';
 import { Booking, BookingRequest, CartItem, EVENT_TYPES, TIME_SLOTS } from '../core/models';
 import { bookingErrorMessage, isRetryableTokenError } from '../core/booking-guard';
-import { isValidPhoneNumber } from '../core/contact';
+import { phoneValidator } from '../core/validators';
 import { formatDate, formatMoney, formatTimeRange, todayIso } from '../core/format';
 import { IconComponent } from '../components/icon.component';
 import { DateFieldComponent } from '../components/date-field.component';
@@ -15,7 +15,6 @@ import { PhotoPipe } from '../components/photo.pipe';
 type Step = 1 | 2 | 3;
 /** The form token the API handed out when the page opened, when it arrived, and how many milliseconds it must age before it is accepted. */
 type FormTokenInfo = { token: string; minWaitMs: number; at: number };
-const phoneValid: ValidatorFn = c => !c.value || isValidPhoneNumber(String(c.value).trim()) ? null : { phone: true };
 const STEP_FIELDS: Record<Step, string[]> = {
   1: ['type', 'date', 'startTime', 'endTime', 'location', 'guestCount', 'notes'],
   2: ['name', 'phone', 'email'],
@@ -103,7 +102,7 @@ export class BookingPageComponent {
     guestCount:[this.api.event().guestCount,[Validators.min(0),Validators.max(50000)]],
     notes:[this.api.event().notes],
     name:['',[Validators.required,Validators.minLength(2)]],
-    phone:['',[Validators.required,phoneValid]],
+    phone:['',[Validators.required,phoneValidator]],
     email:['',[Validators.required,Validators.email]],
     website:['']
   });

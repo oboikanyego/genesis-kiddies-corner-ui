@@ -19,7 +19,8 @@
     "test:format": "node --test scripts/format.test.mjs",
     "test:brand": "node --test scripts/brand.test.mjs",
     "test:contact": "node --test scripts/contact.test.mjs",
-    "test:booking-guard": "node --test scripts/booking-guard.test.mjs"
+    "test:booking-guard": "node --test scripts/booking-guard.test.mjs",
+    "test:booking-search": "node --test scripts/booking-search.test.mjs"
   },
   "engines": {
     "node": ">=20.19"

@@ -103,6 +103,8 @@ export class BookingApiService {
   }
 
   sendBooking(data: BookingRequest) { return this.http.post<{ reference: string; status: string; message: string; duplicate?: boolean }>(`${this.url}/bookings`, data); }
+  /** A customer's own bookings: the email address AND the phone number they booked with must both match. An unknown email and a wrong phone give the same empty answer. */
+  lookupBookings(email: string, phone: string) { return this.http.post<{ items: Booking[] }>(`${this.url}/bookings/lookup`, { email, phone }); }
   /** Spam protection: proof that the booking form was opened. Asked for when the booking page opens; sent back with the request. */
   bookingFormToken() { return this.http.get<{ token: string; minWaitMs?: number }>(`${this.url}/bookings/form-token`); }
   track(reference: string, email: string) { return this.http.get<Booking>(`${this.url}/bookings/track`, { params: { reference, email } }); }
@@ -115,7 +117,13 @@ export class BookingApiService {
   logout() { sessionStorage.removeItem('gkc_admin_token'); }
   adminStats() { return this.http.get<AdminStats>(`${this.url}/admin/stats`, this.auth()); }
   adminCalendar(month: string) { return this.http.get<{ month: string; items: Booking[] }>(`${this.url}/admin/calendar`, { ...this.auth(), params: { month } }); }
-  adminBookings(status?: string, page = 1) { return this.http.get<BookingPage>(`${this.url}/admin/bookings`, { ...this.auth(), params: status ? { status, page } : { page } }); }
+  /** The owner's booking list. `search` looks in the customer's name, email, phone number (written any way) and the booking reference. */
+  adminBookings(status?: string, page = 1, search?: string) {
+    const params: Record<string, string | number> = { page };
+    if (status) params['status'] = status;
+    if (search) params['search'] = search;
+    return this.http.get<BookingPage>(`${this.url}/admin/bookings`, { ...this.auth(), params });
+  }
   adminUpdate(id: string, status: BookingStatus) { return this.http.patch<Booking>(`${this.url}/admin/bookings/${id}/status`, { status }, this.auth()); }
   adminServices() { return this.http.get<ServiceItem[]>(`${this.url}/admin/services`, this.auth()); }
   adminSave(service: ServiceItem) { return this.http.patch<ServiceItem>(`${this.url}/admin/services/${service._id}`, service, this.auth()); }
