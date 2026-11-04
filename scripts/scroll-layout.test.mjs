@@ -13,8 +13,9 @@ test('Ionic document scroll lock is bypassed with an explicit native scroll host
   assert.doesNotMatch(app, /<ion-content/);
 });
 
-test('the scroll host fills the viewport and supports vertical touch scrolling', () => {
-  assert.match(styles, /ion-app > \.site-scroll \{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*height:\s*100%;[^}]*overflow-y:\s*auto;[^}]*touch-action:\s*pan-y;/);
+test('the scroll host fills the viewport, scrolls by touch and still lets visitors pinch to zoom', () => {
+  // "manipulation" (not "pan-y", which forbids pinching) keeps vertical scrolling and pinch/pan zoom, and keeps double-tap zoom off.
+  assert.match(styles, /ion-app > \.site-scroll \{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*height:\s*100%;[^}]*overflow-y:\s*auto;[^}]*touch-action:\s*manipulation;/);
   assert.match(styles, /\.app-frame\{min-height:100%;/);
 });
 

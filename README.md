@@ -59,7 +59,7 @@ Run `npm run test:env` to test the configuration generator.
 MVP deliberately excludes online payments, customer sign-ups, messaging, analytics, invoicing and unnecessary integrations. Admin is a single owner account configured by environment variables.
 
 ## Tests
-`npm run test:env`, `test:scroll`, `test:admin-mobile`, `test:admin-login`, `test:blocked-dates`, `test:photos`, `test:design`, `test:format`, `test:brand` and `npm run typecheck` all run in CI (`.github/workflows/verify.yml`).
+`npm run test:env`, `test:scroll`, `test:admin-mobile`, `test:admin-login`, `test:blocked-dates`, `test:photos`, `test:design`, `test:format`, `test:brand`, `test:contact`, `test:booking-guard`, `test:booking-search`, `test:touch-zoom` and `npm run typecheck` all run in CI (`.github/workflows/verify.yml`).
 
 ## Scrolling and page layout
 
@@ -69,3 +69,21 @@ The bottom mobile navigation is a sibling outside that container. Route transiti
 reset the scroll host to the top, including the service detail page at
 `/services/jumping-castles`. Check scrolling with both a mouse wheel and touch gestures
 on mobile; `npm run test:scroll` protects the required DOM and CSS invariants.
+
+## Zooming on phones and tablets
+
+Two rules in `src/styles.scss` keep the page from zooming in and getting stuck:
+
+- **Text boxes are 16px on touch screens.** iPhone and iPad Safari zoom the whole page in when
+  a text box with text smaller than 16px is tapped, and do not zoom back out. Section 18 of the
+  stylesheet sets `font-size: 16px` on every text box, select and text area on any touch screen
+  (`any-pointer: coarse`, which includes a phone held sideways and an iPad) and in narrow windows
+  (up to 899px). Computers with a mouse keep the compact sizes. Do not work around it per field,
+  and never "fix" the zoom with `user-scalable=no` or `maximum-scale` in `index.html`: that takes
+  pinch zoom away from people who need it.
+- **Pinch zoom is never blocked.** The page and the scroll area use `touch-action: manipulation`
+  (scroll, pinch and pan work; only double-tap zoom is off). `touch-action: pan-y` (or `none`)
+  forbids pinching, so a page the phone had zoomed in could not be zoomed back out.
+
+`npm run test:touch-zoom` protects both. It cannot run an iPhone: after changing form styles,
+tap a field on a real iPhone or iPad as well.

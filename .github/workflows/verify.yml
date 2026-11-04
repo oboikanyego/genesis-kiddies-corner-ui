@@ -23,6 +23,7 @@ jobs:
       - run: npm run test:contact
       - run: npm run test:booking-guard
       - run: npm run test:booking-search
+      - run: npm run test:touch-zoom
       - run: npm run typecheck
       - run: npm run build
         env:

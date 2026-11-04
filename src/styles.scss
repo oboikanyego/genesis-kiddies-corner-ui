@@ -40,6 +40,8 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
 body{overflow-x:hidden}
+/* Pinching and panning always work. Only double-tap-to-zoom is off, so quick taps (the + and - buttons, the bottom bar) never zoom the page. */
+html{touch-action:manipulation}
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 button{cursor:pointer}
 a{text-decoration:none;color:inherit}
@@ -67,7 +69,9 @@ ion-app > .site-scroll {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  /* Not "pan-y": that forbids pinching, so a page the phone had zoomed in (for example by tapping a text box) could never be zoomed back out.
+     "manipulation" allows scrolling, pinching and panning, and still switches off double-tap zoom. */
+  touch-action: manipulation;
   overscroll-behavior-y: contain;
   background: var(--bg);
 }
@@ -837,4 +841,20 @@ ion-datetime.blocked-date-calendar::part(calendar-day disabled) { opacity:.35; t
 @media (max-width: 380px) {
   .shortcut-icon{width:50px;height:50px;font-size:25px}
   .stepper{max-width:200px}
+}
+
+/* ==========================================================================
+   18. Text boxes on touch screens: never smaller than 16px
+   --------------------------------------------------------------------------
+   iPhone and iPad Safari zoom the whole page in when a text box with text
+   smaller than 16px is tapped, and then do not zoom back out. This applies to
+   every touch screen whatever its width (a phone held sideways is wider than
+   720px and an iPad is wider still) and to narrow windows, so it is not tied
+   to the phone layout. Computers with a mouse keep the compact sizes.
+   !important is deliberate: no field style, now or added later, can undo it.
+   ========================================================================== */
+@media (any-pointer: coarse), (max-width: 899px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]):not([type="image"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+  select,
+  textarea { font-size: 16px !important; }
 }
