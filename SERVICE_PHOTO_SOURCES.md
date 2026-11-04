@@ -5,7 +5,16 @@
 
 As the pack's own README states, these are **AI-generated concept/illustrative images**, not photos of Genesis Kiddies Corner's equipment, staff or customers. The people and mascots shown are fictional. The site therefore labels them "Illustrative image — exact equipment confirmed by the owner", and they should not be presented as actual inventory. Replace them with your own photographs when you have them.
 
-They were converted to WebP for fast loading (`-lg` 1448 px wide, `-md` 720 px, `-sm` 320 px; round icons 160 px). The *Stall & Sales Service* uses a crop of the popcorn stall picture as a stand-in. No image has been supplied yet for the logo, Graduations, School Events, Community Events or Church Events.
+They were converted to WebP for fast loading (`-lg` 1448 px wide, `-md` 720 px, `-sm` 320 px; round icons 160 px).
+
+### Added on 4 November 2026 (generated for the owner with Canva's AI image generator)
+The pack had no pictures for these, so four more were generated in the same bright party style and added: **Stall & Sales Service**, **Graduations**, **School Events** and **Community Events**. Like the pack, they are AI-generated illustrations, not photos of the business, and the people shown are fictional. The descriptions used:
+- *Stall & Sales Service*: a colourful red-and-white striped market stall at a children's party in a sunny park; a friendly vendor in a blue shirt serves sweet treats (popcorn boxes, candy floss, slush drinks, cupcakes) to excited children with face paint; bunting, balloons and a bouncy castle behind.
+- *Graduations*: a joyful kindergarten and primary school graduation outdoors; children in small blue caps and gowns, one holding a ribbon-tied certificate, caps tossed in the air, proud parents, a graduation cake, bunting and balloons.
+- *School Events*: a happy school fun day on a sunny field; children in school uniforms and sports bibs cheering with a friendly teacher, a bouncy castle, bunting and balloons.
+- *Community Events*: a lively community fun day in a sunny park; families and children around event tents and food stalls, a small decorated stage, a bouncy castle, face paint, balloons.
+
+Still missing: a picture for *Church Events* (the Canva credits ran out before it could be generated) and the official logo file.
 
 ## Earlier stand-in photos (replaced by the images above)
 Genesis Kiddies Corner uses real licensed photographic **examples**, not photos of the exact available inventory. Actual setup may differ; upload photographs of your owned equipment when ready. Stored URLs point to hosted copies in Cloudinary rather than relying on remote stock providers' hotlinks.

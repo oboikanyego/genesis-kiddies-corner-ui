@@ -33,7 +33,9 @@ test('every service has the design image in three sizes plus a round icon, and e
 });
 
 test('the homepage banner and the occasion pictures exist and are light', () => {
-  for (const [file, limit] of [['hero/hero-1448.webp', 300], ['hero/hero-800.webp', 150], ['occasions/kiddies-parties-md.webp', 150], ['occasions/kiddies-parties-sm.webp', 60], ['occasions/family-days-md.webp', 150], ['occasions/family-days-sm.webp', 60]]) {
+  for (const [file, limit] of [['hero/hero-1448.webp', 300], ['hero/hero-800.webp', 150], ['occasions/kiddies-parties-md.webp', 150], ['occasions/kiddies-parties-sm.webp', 60], ['occasions/family-days-md.webp', 150], ['occasions/family-days-sm.webp', 60],
+    ['occasions/graduations-md.webp', 150], ['occasions/graduations-sm.webp', 60], ['occasions/school-events-md.webp', 150], ['occasions/school-events-sm.webp', 60],
+    ['occasions/community-events-md.webp', 150], ['occasions/community-events-sm.webp', 60]]) {
     const path = `src/assets/images/${file}`;
     assert.ok(existsSync(new URL(path, root)), `missing ${path}`);
     assert.ok(kb(path) < limit, `${path} is ${Math.round(kb(path))} KB (limit ${limit} KB)`);

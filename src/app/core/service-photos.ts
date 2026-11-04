@@ -13,7 +13,6 @@ export const DESIGN_PHOTOS: Record<string, string> = {
   'face-painting': designPhoto('face-painting'),
   'popcorn-machine': designPhoto('popcorn-machine'),
   'candy-floss-machine': designPhoto('candy-floss-machine'),
-  // Stall & Sales Service: stand-in (a crop of the popcorn stall) until the owner supplies an image of their own.
   'stall-sales-service': designPhoto('stall-sales-service')
 };
 
