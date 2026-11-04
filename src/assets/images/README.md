@@ -4,7 +4,7 @@
 |---|---|---|
 | `services/` | One picture per service | `<service-slug>-lg.webp` (1448 px wide, details page), `-md.webp` (720 px, cards), `-sm.webp` (320 px, thumbnails) |
 | `icons/` | Round shortcut icons on the homepage | `<service-slug>.webp` (160 × 160, shown in a circle) |
-| `brand/` | The logo and icon | `logo-md.webp` (240 px wide, header) and `logo-lg.webp` (480 px, phone homepage / sharper screens); `icon-120.webp`, `favicon-64.png`, `icon-192.png`, `icon-512.png`. The favicon, iPhone icon and manifest are in `public/` |
+| `brand/` | The logo and icon | `logo-md.webp` (280 × 223 px, header and sharper screens) and `logo-lg.webp` (560 × 446 px, phone homepage and sharper screens); `icon-120.webp`, `favicon-64.png`, `icon-192.png`, `icon-512.png`. The favicon, iPhone icon and manifest are in `public/` |
 | `hero/` | Homepage banner | `hero-1448.webp` (computers), `hero-800.webp` (phones) |
 | `occasions/` | *Perfect for Every Occasion* tiles and the gallery | `<name>-md.webp` (720 px), `<name>-sm.webp` (320 px); names: `kiddies-parties`, `family-days`, `graduations`, `school-events`, `community-events`, `church-events` |
 

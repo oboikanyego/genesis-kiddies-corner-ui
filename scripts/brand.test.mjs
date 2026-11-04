@@ -57,3 +57,31 @@ test('the logo is used in the header, on the phone homepage and in the owner sid
   assert.ok(admin.includes('<app-logo [large]="true"/>'));
   assert.ok(admin.includes('/assets/images/brand/icon-120.webp'));
 });
+
+/** The pixel size of a WebP file (reads the VP8X, VP8 and VP8L layouts). */
+function webpSize(buf) {
+  assert.equal(buf.toString('latin1', 0, 4), 'RIFF');
+  assert.equal(buf.toString('latin1', 8, 12), 'WEBP');
+  const kind = buf.toString('latin1', 12, 16);
+  if (kind === 'VP8X') return { width: 1 + buf.readUIntLE(24, 3), height: 1 + buf.readUIntLE(27, 3) };
+  if (kind === 'VP8 ') return { width: buf.readUInt16LE(26) & 0x3fff, height: buf.readUInt16LE(28) & 0x3fff };
+  if (kind === 'VP8L') { const bits = buf.readUInt32LE(21); return { width: 1 + (bits & 0x3fff), height: 1 + ((bits >> 14) & 0x3fff) }; }
+  throw new Error('unknown WebP layout ' + kind);
+}
+
+test('the logo files, the srcset and the width/height attributes all agree, so the page does not jump and the logo is never stretched', () => {
+  const md = webpSize(readFileSync(new URL('src/assets/images/brand/logo-md.webp', root)));
+  const lg = webpSize(readFileSync(new URL('src/assets/images/brand/logo-lg.webp', root)));
+  assert.deepEqual(lg, { width: md.width * 2, height: md.height * 2 }, 'the large logo should be exactly twice the medium one');
+  const logo = read('src/app/components/logo.component.ts');
+  assert.ok(logo.includes(`width="${md.width}" height="${md.height}"`), `the <img> should say width="${md.width}" height="${md.height}"`);
+  assert.ok(logo.includes(`logo-md.webp ${md.width}w`) && logo.includes(`logo-lg.webp ${lg.width}w`), 'the srcset should list the real widths');
+});
+
+test('the header is tall enough for the logo with a little room above and below', () => {
+  const css = read('src/styles.scss');
+  const header = Number(/--header-h:\s*(\d+)px/.exec(css)?.[1]);
+  const logo = Number(/\.logo\{[^}]*height:(\d+)px/.exec(css)?.[1]);
+  assert.ok(header > 0 && logo > 0, 'could not read the header and logo heights');
+  assert.ok(header - logo >= 8, `header ${header}px is too tight for a ${logo}px logo`);
+});

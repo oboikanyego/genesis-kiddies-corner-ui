@@ -29,7 +29,7 @@
   --navy: #16283c;
   --shadow: 0 10px 32px rgba(18, 32, 82, .09);
   --shadow-sm: 0 3px 14px rgba(18, 32, 82, .07);
-  --header-h: 76px;
+  --header-h: 92px;
   --tabbar-h: 68px;
   font-family: var(--font);
 }
@@ -77,8 +77,8 @@ ion-app > .site-scroll {
 /* ==========================================================================
    3. Logo, header, footer, bottom tab bar
    ========================================================================== */
-.logo{display:block;height:60px;width:auto}
-.logo-lg{height:118px}
+.logo{display:block;height:80px;width:auto}
+.logo-lg{height:140px}
 
 .site-header{height:var(--header-h);display:flex;align-items:center;justify-content:space-between;gap:24px;width:100%;padding:0 clamp(20px,5vw,72px);position:relative;z-index:20;background:#fff;box-shadow:0 1px 0 rgba(18,32,82,.04)}
 .brand{display:flex;align-items:center;flex:none}
@@ -467,7 +467,7 @@ ion-app > .site-scroll {
 .admin-layout{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100vh;background:var(--bg)}
 .admin-sidebar{background:var(--navy);color:#e7ecf8;padding:22px 18px;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh}
 .admin-brand{display:block;padding:4px 8px 22px}
-.admin-brand .logo{height:68px}
+.admin-brand .logo{height:100px}
 .admin-tab-list{display:flex;flex-direction:column;gap:6px}
 .admin-tab,.admin-logout{display:flex;align-items:center;gap:14px;border:0;background:transparent;color:#e7ecf8;padding:15px 16px;border-radius:14px;font:600 16px var(--font);text-align:left;cursor:pointer;width:100%}
 .admin-tab svg,.admin-tab .icon{flex:none}
