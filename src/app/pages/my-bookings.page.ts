@@ -34,7 +34,7 @@ import { PhotoPipe } from '../components/photo.pipe';
         <button type="button" class="btn btn-outline-pink btn-sm" (click)="toggle(b.reference)" [attr.aria-expanded]="open()===b.reference">View Details</button>
         @if(open()===b.reference){
           <div class="mb-details">
-            <p class="mb-note">@if(b.status==='pending'){Your request is waiting for review by the owner.}@else if(b.status==='confirmed'){Great news! Your booking is confirmed.}@else{Current status: {{label(b.status)}}.}</p>
+            <p class="mb-note">@if(b.status==='pending'){Your request is waiting for review by the owner.}@else if(b.status==='confirmed'){Great news! Your booking is confirmed.}@else if(b.status==='declined'){This request could not be accommodated. Please contact Genesis Kiddies Corner to arrange another date or service.}@else{Current status: {{label(b.status)}}.}</p>
             <h3>Booked items</h3>
             @for(i of b.items;track i.serviceId+i.mode){<div class="mb-item"><span>{{i.quantity}} × {{i.name}}</span><span>{{i.unitPrice===null?'Price on request':money(i.unitPrice*i.quantity)}}</span></div>}
             <div class="mb-item mb-total"><span>Estimated Total</span><strong>{{b.amount===null?'To be quoted':money(b.amount)}}</strong></div>

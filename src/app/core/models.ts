@@ -45,6 +45,9 @@ export interface Booking {
   status: BookingStatus;
   adminNotes?: string;
   createdAt: string;
+  conflict?: {count:number;services:string[];unavailable:boolean};
+  autoDeclined?: number;
+  message?: string;
 }
 export interface BookingPage { items: Booking[]; total: number; page: number; pages: number; }
 /** A booking this device made (or looked up), remembered so "My Bookings" works without a login. */
@@ -55,6 +58,7 @@ export interface AdminStats {
   cancelled?: number;
   recent: Booking[];
   upcoming?: Booking[];
+  notifications?: {configured:boolean;queued:number};
 }
 /** The contact details the owner enters in Admin > Settings. An empty string means "not set", and it is not shown on the website. */
 export interface ContactDetails { phone: string; whatsapp: string; email: string; area: string; }
