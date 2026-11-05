@@ -58,6 +58,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
     <div class="admin-content">
     @if(error()){<div class="notice error" role="alert">{{error()}}</div>}
     @if(message()){<div class="notice success" role="status">{{message()}}</div>}
+    @if(stats()?.notifications && !stats()?.notifications?.configured && (stats()?.notifications?.queued||0)>0){<div class="notice conflict-mail" role="status">✉ {{stats()?.notifications?.queued}} booking notification(s) are queued but email delivery is not configured on the backend. Add SMTP credentials to send them.</div>}
 
     @if(tab()==='dashboard'){
       <div class="stat-grid">
@@ -71,7 +72,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
           <h2 id="upcoming-title">Upcoming Bookings</h2>
           @for(b of upcoming();track b._id){
             <div class="up-row">
-              <div class="up-text"><b>{{b.event.type}}</b><small>{{when(b)}}</small><small>{{b.event.location}}</small></div>
+              <div class="up-text"><b>{{b.event.type}}</b><small>{{when(b)}}</small><small>{{b.event.location}}</small>@if((b.conflict?.count||0)>0){<span class="conflict-flag">⚠ {{b.conflict?.count}} other pending request(s): {{b.conflict?.services?.join(', ')}}</span>}</div>
               <div class="up-side"><span class="chip chip-{{b.status}}">{{label(b.status)}}</span><button type="button" class="btn-view" (click)="selected.set(b)">View</button></div>
             </div>
           }
@@ -92,7 +93,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
         @if(searching()){<p class="search-summary" role="status">{{total()}} {{total()===1?'booking matches':'bookings match'}} “{{searchText().trim()}}”</p>}
       </div>
       <div class="table-scroll"><table class="admin-table"><thead><tr><th>Booking</th><th>Customer</th><th>Event</th><th>Services</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-      @for(b of bookings();track b._id){<tr><td><b>{{b.reference}}</b><small>{{b.createdAt | date:'mediumDate'}}</small></td><td><b>{{b.customer?.name}}</b><small>{{b.customer?.email}}</small><small>{{b.customer?.phone}}</small></td><td><b>{{b.event.type}}</b><small>{{when(b)}}</small><small>{{b.event.location}}</small></td><td>@for(i of b.items;track i.serviceId){<small>{{i.quantity}}× {{i.name}} ({{i.mode}})</small>}</td><td><span class="chip chip-{{b.status}}">{{label(b.status)}}</span></td><td><div class="table-actions"><button class="tiny-btn view-btn" (click)="selected.set(b)">View</button>@if(b.status==='pending'){<button class="tiny-btn green-btn" (click)="setStatus(b,'confirmed')" [disabled]="busy()">Approve</button><button class="tiny-btn red-btn" (click)="setStatus(b,'declined')" [disabled]="busy()">Decline</button>}@if(b.status==='confirmed'){<button class="tiny-btn green-btn" (click)="setStatus(b,'completed')" [disabled]="busy()">Complete</button><button class="tiny-btn red-btn" (click)="setStatus(b,'cancelled')" [disabled]="busy()">Cancel</button>}</div></td></tr>}
+      @for(b of bookings();track b._id){<tr><td><b>{{b.reference}}</b><small>{{b.createdAt | date:'mediumDate'}}</small></td><td><b>{{b.customer?.name}}</b><small>{{b.customer?.email}}</small><small>{{b.customer?.phone}}</small></td><td><b>{{b.event.type}}</b><small>{{when(b)}}</small><small>{{b.event.location}}</small>@if((b.conflict?.count||0)>0){<span class="conflict-flag" role="status">⚠ {{b.conflict?.count}} other pending request(s): {{b.conflict?.services?.join(', ')}}</span>}@if(b.conflict?.unavailable){<span class="conflict-flag">Already fully booked</span>}</td><td>@for(i of b.items;track i.serviceId){<small>{{i.quantity}}× {{i.name}} ({{i.mode}})</small>}</td><td><span class="chip chip-{{b.status}}">{{label(b.status)}}</span></td><td><div class="table-actions"><button class="tiny-btn view-btn" (click)="selected.set(b)">View</button>@if(b.status==='pending'){<button class="tiny-btn green-btn" (click)="setStatus(b,'confirmed')" [disabled]="busy()">Approve</button><button class="tiny-btn red-btn" (click)="setStatus(b,'declined')" [disabled]="busy()">Decline</button>}@if(b.status==='confirmed'){<button class="tiny-btn green-btn" (click)="setStatus(b,'completed')" [disabled]="busy()">Complete</button><button class="tiny-btn red-btn" (click)="setStatus(b,'cancelled')" [disabled]="busy()">Cancel</button>}</div></td></tr>}
       </tbody></table></div>@if(!bookings().length){<div class="empty-admin">{{searching()?'No bookings match your search.':'No booking requests found.'}}</div>}
       <div class="pagination"><button (click)="page.set(page()-1);loadBookings()" [disabled]="page()===1">← Previous</button><span>Page {{page()}} of {{pages()||1}}</span><button (click)="page.set(page()+1);loadBookings()" [disabled]="page()>=pages()">Next →</button></div>
       </div>
@@ -198,6 +199,8 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
         <dt>Number of Kids (approx)</dt><dd>{{b.event.guestCount}}</dd>
         @if(b.event.notes){<dt>Special Instructions</dt><dd>{{b.event.notes}}</dd>}
       </dl>
+      @if((b.conflict?.count||0)>0){<div class="conflict-notice" role="status">⚠ {{b.conflict?.count}} other pending request(s) compete for {{b.conflict?.services?.join(', ')}} on this date and time. Approving will automatically decline any requests that cannot be fulfilled.</div>}
+      @if(b.conflict?.unavailable){<div class="conflict-notice">This slot is already fully booked. Approval will be blocked.</div>}
       <h3>Booked items</h3>
       @for(i of b.items;track i.serviceId+i.mode){<div class="dialog-item"><span>{{i.quantity}} × {{i.name}} <small>({{i.mode}})</small></span><span>{{i.unitPrice===null?'Price on request':money(i.unitPrice*i.quantity)}}</span></div>}
       <div class="dialog-item dialog-total"><span>Estimated Total</span><strong>{{b.amount===null?'To be quoted':money(b.amount)}}</strong></div>
@@ -294,7 +297,7 @@ export class AdminPage {
   setStatus(b:Booking,status:BookingStatus){
     this.busy.set(true);this.error.set('');
     this.api.adminUpdate(b._id,status).subscribe({
-      next:updated=>{this.busy.set(false);this.message.set(`${b.reference} marked ${status}.`);if(this.selected()?._id===b._id)this.selected.set({...b,...updated});this.load(true);},
+      next:updated=>{this.busy.set(false);this.message.set(`${b.reference} marked ${status}.${updated.autoDeclined?` ${updated.autoDeclined} conflicting request(s) automatically declined; customer notifications queued.`:''}`);if(this.selected()?._id===b._id)this.selected.set({...b,...updated});this.load(true);},
       error:e=>{this.busy.set(false);this.handleError(e);}
     });
   }
