@@ -58,7 +58,6 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
     <div class="admin-content">
     @if(error()){<div class="notice error" role="alert">{{error()}}</div>}
     @if(message()){<div class="notice success" role="status">{{message()}}</div>}
-    @if(stats()?.notifications && !stats()?.notifications?.configured && (stats()?.notifications?.queued||0)>0){<div class="notice conflict-mail" role="status">✉ {{stats()?.notifications?.queued}} booking notification(s) are queued but email delivery is not configured on the backend. Add SMTP credentials to send them.</div>}
 
     @if(tab()==='dashboard'){
       <div class="stat-grid">
@@ -297,7 +296,7 @@ export class AdminPage {
   setStatus(b:Booking,status:BookingStatus){
     this.busy.set(true);this.error.set('');
     this.api.adminUpdate(b._id,status).subscribe({
-      next:updated=>{this.busy.set(false);this.message.set(`${b.reference} marked ${status}.${updated.autoDeclined?` ${updated.autoDeclined} conflicting request(s) automatically declined; customer notifications queued.`:''}`);if(this.selected()?._id===b._id)this.selected.set({...b,...updated});this.load(true);},
+      next:updated=>{this.busy.set(false);this.message.set(`${b.reference} marked ${status}.${updated.autoDeclined?` ${updated.autoDeclined} conflicting request(s) automatically declined. Their booking statuses are updated online.`:''}`);if(this.selected()?._id===b._id)this.selected.set({...b,...updated});this.load(true);},
       error:e=>{this.busy.set(false);this.handleError(e);}
     });
   }

@@ -58,7 +58,6 @@ export interface AdminStats {
   cancelled?: number;
   recent: Booking[];
   upcoming?: Booking[];
-  notifications?: {configured:boolean;queued:number};
 }
 /** The contact details the owner enters in Admin > Settings. An empty string means "not set", and it is not shown on the website. */
 export interface ContactDetails { phone: string; whatsapp: string; email: string; area: string; }
