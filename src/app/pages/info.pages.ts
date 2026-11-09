@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { BookingApiService } from '../core/booking-api.service';
 import { telHref, whatsappHref } from '../core/contact';
 import { ContactDetails, EMPTY_CONTACT } from '../core/models';
-import { DEFAULT_OCCASIONS, OCCASION_BACKGROUNDS } from '../core/site-config';
+import { OCCASION_BACKGROUNDS } from '../core/site-config';
 import type { OccasionTheme } from '../core/models';
 import { IconComponent } from '../components/icon.component';
 import { PhotoPipe } from '../components/photo.pipe';
@@ -31,7 +31,7 @@ export class AboutPage {}
   @for (s of (api.services$ | async); track s.slug) {
     <a class="gallery-tile" [routerLink]="['/services', s.slug]"><img [src]="s.image | photo:'md'" [alt]="s.name"/><span>{{s.name}}</span></a>
   }
-  @for (e of ((api.occasions$ | async) ?? fallbackOccasions); track e._id) {
+  @for (e of ((api.occasions$ | async) ?? []); track e._id) {
     <figure class="gallery-tile">
       @if(e.photo){<img [src]="e.photo" [alt]="e.label"/>}
       @else{<div class="occasion-art" [style.background]="background(e.theme)"><span aria-hidden="true">{{e.emoji}}</span></div>}
@@ -40,7 +40,7 @@ export class AboutPage {}
   }
 </div>
 <p class="photo-note">Illustrative images. The exact equipment is confirmed when we review your booking.</p></div>` })
-export class GalleryPage { api = inject(BookingApiService); fallbackOccasions = DEFAULT_OCCASIONS; background(t:OccasionTheme){return OCCASION_BACKGROUNDS[t];} }
+export class GalleryPage { api = inject(BookingApiService); background(t:OccasionTheme){return OCCASION_BACKGROUNDS[t];} }
 
 /** Contact: shows the details the owner entered in Admin > Settings (read from the API); an empty detail is left out. */
 @Component({ selector: 'app-contact', standalone: true, imports: [RouterLink, IconComponent], template: `
