@@ -877,3 +877,41 @@ ion-datetime.blocked-date-calendar::part(calendar-day disabled) { opacity:.35; t
 .service-photo-hint{font-size:10px;line-height:1.35;color:var(--text)}
 .service-photo-cancel{padding:6px 2px;color:#784b9c;background:transparent;border:0;text-decoration:underline;cursor:pointer;font-size:11px;text-align:left}
 @media(max-width:860px){.service-photo-editor{width:100%;flex:initial;max-width:none}.service-photo-preview{max-height:235px;aspect-ratio:16/9}.service-photo-pick{max-width:220px}}
+
+
+/* Owner-managed occasions: responsive editor without an extra crowded bottom-navigation tab. */
+.admin-catalog-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;padding:5px;background:#f0effb;border:1px solid #e5e3fa;border-radius:15px;width:max-content;max-width:100%}
+.admin-catalog-tabs button{border:0;background:transparent;color:#5b6282;border-radius:11px;padding:12px 18px;font:800 13px var(--font);cursor:pointer;min-height:44px}
+.admin-catalog-tabs button.active{background:#fff;color:#5546ba;box-shadow:0 2px 9px rgba(55,45,140,.12)}
+.admin-catalog-tabs button:focus-visible{outline:3px solid #7564ed;outline-offset:2px}
+.occasion-admin-heading{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+.occasion-admin-heading h2{font-size:22px;margin:0 0 8px}
+.occasion-admin-heading p{font:500 14px/1.6 var(--font);margin:0;color:var(--text);max-width:600px}
+.occasion-admin-card{display:flex;align-items:flex-start;gap:22px;padding:20px;margin-bottom:16px}
+.occasion-admin-image{width:175px;flex:0 0 175px;display:flex;flex-direction:column;gap:8px}
+.occasion-admin-preview{width:100%;height:128px;border-radius:13px;overflow:hidden;display:grid;place-items:center;border:1px solid #e9e6f4}
+.occasion-admin-preview img{width:100%;height:100%;object-fit:cover}
+.occasion-admin-preview span{font-size:48px}
+.occasion-admin-main{min-width:0;flex:1}
+.occasion-admin-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.occasion-admin-fields label{display:flex;flex-direction:column;gap:7px;min-width:0;font:800 12px var(--font);color:#65718b}
+.occasion-admin-fields input,.occasion-admin-fields select{width:100%;min-width:0;padding:11px 12px;border:1px solid #dfe5ef;background:#fff;color:#303951;border-radius:10px;font:500 15px var(--font);outline-color:#7564ed}
+.occasion-admin-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-top:18px}
+.occasion-admin-actions .btn{min-height:44px}
+.occasion-admin-create{margin:18px 0 20px}
+.occasion-admin-create h3{font-size:18px;margin:0 0 16px}
+.occasion-admin-create .btn{margin-top:12px}
+.occasion-admin-help{font:500 12px/1.6 var(--font);color:#6b7592;margin:10px 0 18px}
+@media(max-width:760px){
+ .admin-catalog-tabs{width:100%;display:grid;grid-template-columns:1fr 1fr}
+ .admin-catalog-tabs button{font-size:12px;padding:10px 8px}
+ .occasion-admin-card{flex-direction:column;gap:16px}
+ .occasion-admin-image{width:100%;flex:auto}
+ .occasion-admin-preview{height:180px}
+ .occasion-admin-image .service-photo-pick{width:100%;max-width:230px}
+ .occasion-admin-main{width:100%}
+ .occasion-admin-fields{grid-template-columns:1fr}
+ .occasion-admin-fields input,.occasion-admin-fields select{font-size:16px;min-height:46px}
+ .occasion-admin-actions .btn{width:100%}
+ .occasion-admin-heading .btn{width:100%;min-height:46px}
+}
