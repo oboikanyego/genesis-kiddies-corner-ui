@@ -72,6 +72,7 @@ export class BackendConnectionService {
   retryConnection(): void {
     if (this.status() !== 'offline') return;
     this.activeRequest = undefined;
+    this.changeStatus('idle');
     this.start();
   }
 }
