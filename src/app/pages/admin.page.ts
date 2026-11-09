@@ -2,7 +2,6 @@ import { Component, HostListener, computed, inject, signal } from '@angular/core
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
 import { BookingApiService } from '../core/booking-api.service';
 import { AdminStats, Booking, BookingStatus, ContactDetails, EMPTY_CONTACT, ServiceItem } from '../core/models';
 import { contactFieldErrors } from '../core/contact';
@@ -14,14 +13,14 @@ import { LogoComponent } from '../components/logo.component';
 import { MonthCalendarComponent } from '../components/month-calendar.component';
 import { PhotoPipe } from '../components/photo.pipe';
 import { OccasionManagerComponent } from '../components/occasion-manager.component';
-import { makeBlockedDateFilter } from '../core/blocked-date-filter';
+import { blockedMonthGrid, shiftBlockedMonth } from '../core/blocked-date-filter';
 import { switchMap } from 'rxjs';
 import { prepareServicePhoto } from '../core/photo-upload';
 
 type AdminTab = 'dashboard' | 'bookings' | 'calendar' | 'services' | 'settings';
 const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings: 'Bookings', calendar: 'Calendar', services: 'Services', settings: 'Settings' };
 
-@Component({selector:'app-admin',standalone:true,imports:[FormsModule,DatePipe,RouterLink,IonicModule,IconComponent,LogoComponent,MonthCalendarComponent,PhotoPipe,OccasionManagerComponent],template:`
+@Component({selector:'app-admin',standalone:true,imports:[FormsModule,DatePipe,RouterLink,IconComponent,LogoComponent,MonthCalendarComponent,PhotoPipe,OccasionManagerComponent],template:`
 @if(!loggedIn()){
 <div class="admin-login-wrap">
   <form class="surface-card admin-login" (ngSubmit)="login()" aria-label="Owner sign in">
@@ -148,10 +147,33 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
       <small class="service-photo-hint">JPG, PNG or WebP · auto-resized</small>
     </div><div class="manage-content"><div class="manage-title"><h3>{{item.name}}</h3><span class="category-tag">{{item.category}}</span></div><div class="manage-fields"><label><span>Price (R)</span><input type="number" min="0" [ngModel]="item.price" (ngModelChange)="item.price=$event===null||$event===''?null:+$event" placeholder="On request"/></label><label><span>Available stock</span><input type="number" min="1" [(ngModel)]="item.stock"/></label><div class="blocked-date-editor">
       <div class="blocked-date-heading"><span class="blocked-date-label">Blocked dates</span><span class="blocked-date-counter">{{item.blockedDates.length}} / 100</span></div>
-      <button type="button" class="blocked-date-trigger" (click)="openBlockedDateCalendar(item)" [attr.aria-label]="'Open blocked dates calendar for ' + item.name">
+      <button type="button" class="blocked-date-trigger" (click)="openBlockedDateCalendar(item)" [attr.aria-expanded]="activeBlockedService()?._id===item._id" [attr.aria-controls]="'blocked-calendar-'+item._id" [attr.aria-label]="'Choose blocked dates for ' + item.name">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
         <span>Choose blocked dates</span><span class="blocked-date-trigger-chevron" aria-hidden="true">›</span>
+
       </button>
+      @if(activeBlockedService()?._id === item._id){
+        <div class="blocked-calendar-panel" [id]="'blocked-calendar-'+item._id" role="group" [attr.aria-label]="'Choose unavailable dates for '+item.name">
+          <div class="blocked-calendar-toolbar">
+            <button type="button" class="blocked-calendar-nav" (click)="moveBlockedMonth(-1)" [disabled]="blockedCalendarMonth()<=todayIsoLocal().slice(0,7)" aria-label="Previous month">‹</button>
+            <strong aria-live="polite">{{blockedCalendarMonthLabel()}}</strong>
+            <button type="button" class="blocked-calendar-nav" (click)="moveBlockedMonth(1)" aria-label="Next month">›</button>
+          </div>
+          <div class="blocked-calendar-grid" role="group" aria-label="Calendar days">
+            @for(weekday of blockedWeekdays;track weekday){<span class="blocked-calendar-weekday">{{weekday}}</span>}
+            @for(day of blockedCalendarDays();track $index){
+              @if(day){
+                <button type="button" class="blocked-calendar-day" [class.today]="day.date===todayIsoLocal()" [disabled]="!isBlockedDateEnabled(day.date)||item.blockedDates.length>=100" [attr.aria-label]="'Block '+formatBlockedDate(day.date)" (click)="onBlockedDatePicked(day.date)">{{day.day}}</button>
+              } @else {<span class="blocked-calendar-blank" aria-hidden="true"></span>}
+            }
+          </div>
+          <div class="blocked-calendar-footer">
+            <small>Grey days are past or already blocked. Select a day, then press Save changes.</small>
+            @if(item.blockedDates.length>=100){<small>100-date limit reached. Remove a blocked date first.</small>}
+            <button type="button" class="blocked-calendar-done" (click)="closeBlockedDateCalendar()">Done</button>
+          </div>
+        </div>
+      }
       @if(item.blockedDates.length){
         <div class="blocked-date-chips" aria-label="Currently blocked dates">
           @for(blockedDate of item.blockedDates; track blockedDate){
@@ -162,21 +184,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
       <small class="blocked-date-help">Tap the calendar icon to select a day. Past and already blocked dates are disabled. Press <strong>Save changes</strong> to apply.</small>
     </div></div><div class="manage-bottom"><label class="toggle-label"><input type="checkbox" [(ngModel)]="item.active"/> Show service to customers</label><button class="btn btn-pink" (click)="saveService(item)" [disabled]="busy()">Save changes →</button></div></div></article>}
     </div>
-      <ion-modal class="blocked-date-calendar-modal" [isOpen]="!!activeBlockedService()" (didDismiss)="closeBlockedDateCalendar()">
-        <ng-template>
-          <div class="blocked-date-modal-content">
-            <div class="blocked-date-modal-header">
-              <div><span class="blocked-date-modal-kicker">BLOCK DATES</span><h2>{{activeBlockedService()?.name}}</h2><p>Choose a date to make this service unavailable.</p></div>
-              <button class="blocked-date-modal-close" type="button" (click)="closeBlockedDateCalendar()" aria-label="Close calendar">×</button>
-            </div>
-            @if(activeBlockedService()){
-              <ion-datetime class="blocked-date-calendar" presentation="date" locale="en-ZA" [min]="todayIsoLocal()" [isDateEnabled]="blockedDateFilter()" [showDefaultButtons]="false" (ionChange)="onBlockedDatePicked($event.detail.value)"></ion-datetime>
-            }
-            <p class="blocked-date-modal-hint">Grey days cannot be selected (past or already blocked). @if((activeBlockedService()?.blockedDates?.length ?? 0) >= 100){You have reached the 100-date limit. Remove a blocked date to add another.}</p>
-            <button class="blocked-date-modal-done" type="button" (click)="closeBlockedDateCalendar()">Done</button>
-          </div>
-        </ng-template>
-      </ion-modal>
+
       } @else {
         <app-occasion-manager/>
       }
@@ -272,7 +280,7 @@ export class AdminPage {
   shownEvents=computed(()=>{const day=this.calSelected();return day?this.calItems().filter(b=>b.event.date===day):this.calItems();});
   constructor(){if(this.loggedIn())this.load();}
 
-  @HostListener('document:keydown.escape') onEscape(){if(this.selected())this.selected.set(null);else if(this.menuOpen())this.menuOpen.set(false);}
+  @HostListener('document:keydown.escape') onEscape(){if(this.activeBlockedService())this.closeBlockedDateCalendar();else if(this.selected())this.selected.set(null);else if(this.menuOpen())this.menuOpen.set(false);}
   go(tab:AdminTab){this.tab.set(tab);this.menuOpen.set(false);this.load();}
   login(){this.busy.set(true);this.error.set('');this.api.login(this.email,this.password).subscribe({next:()=>{this.busy.set(false);this.loggedIn.set(true);this.password='';this.load();},error:e=>{this.busy.set(false);this.error.set(e.error?.message||'Unable to sign in. Check the API connection.');}});}
   logout(){this.api.logout();this.loggedIn.set(false);this.password='';this.menuOpen.set(false);this.selected.set(null);this.contactLoaded.set(false);}
@@ -331,9 +339,10 @@ export class AdminPage {
   photo(item:ServiceItem):string{return servicePhotoFor(item);}
   monthLabel(date:string):string {return new Date(`${date}T12:00:00`).toLocaleDateString('en-ZA',{month:'short'});}
   activeBlockedService = signal<ServiceItem | null>(null);
-  // Ionic renders days as soon as the datepicker mounts. Build the filter for the
-  // selected service before mounting, rather than reading a null selection at startup.
-  blockedDateFilter = signal<(day: string) => boolean>(() => true);
+  blockedCalendarMonth=signal(this.todayIsoLocal().slice(0,7));
+  blockedCalendarDays=computed(()=>blockedMonthGrid(this.blockedCalendarMonth()));
+  blockedCalendarMonthLabel=computed(()=>new Date(this.blockedCalendarMonth()+'-01T12:00:00').toLocaleDateString('en-ZA',{month:'long',year:'numeric'}));
+  blockedWeekdays=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
   todayIsoLocal(): string {
     const now = new Date();
@@ -347,10 +356,18 @@ export class AdminPage {
   };
 
   openBlockedDateCalendar(item: ServiceItem): void {
-    // Ionic evaluates the callback when the calendar mounts; prepare it first.
-    this.blockedDateFilter.set(makeBlockedDateFilter(this.todayIsoLocal(), item.blockedDates ?? []));
+    // Use inline Angular-rendered controls instead of an Ionic overlay, which
+    // could leave the trigger looking clickable without showing a datepicker.
+    if(this.activeBlockedService()?._id===item._id){this.closeBlockedDateCalendar();return;}
+    this.blockedCalendarMonth.set(this.todayIsoLocal().slice(0,7));
     this.error.set('');
     this.activeBlockedService.set(item);
+  }
+
+  moveBlockedMonth(delta:number):void {
+    const next=shiftBlockedMonth(this.blockedCalendarMonth(),delta);
+    if(next<this.todayIsoLocal().slice(0,7)) return;
+    this.blockedCalendarMonth.set(next);
   }
 
   closeBlockedDateCalendar(): void {
