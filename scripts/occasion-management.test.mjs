@@ -8,6 +8,7 @@ const api=read('src/app/core/booking-api.service.ts');
 const home=read('src/app/pages/home.page.ts');
 const gallery=read('src/app/pages/info.pages.ts');
 const booking=read('src/app/pages/booking.page.ts');
+const detail=read('src/app/pages/detail.page.ts');
 test('owner can switch between Services and Occasions without a sixth mobile tab',()=>{
  assert.ok(admin.includes("catalogView.set('occasions')"));
  assert.ok(admin.includes('<app-occasion-manager/>'));
@@ -28,4 +29,6 @@ test('booking form reflects active configured occasion types',()=>{
  assert.ok(booking.includes('this.api.occasions$.subscribe'));
  assert.ok(booking.includes('occasions.map(o=>o.name)'));
  assert.ok(booking.includes("'Other'"));
+ assert.ok(detail.includes('this.api.occasions$.subscribe'));
+ assert.ok(detail.includes('occasions.map(o=>o.name)'));
 });
