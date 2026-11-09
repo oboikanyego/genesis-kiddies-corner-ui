@@ -12,6 +12,7 @@ jobs:
           node-version: '22'
       - run: npm install
       - run: npm run test:env
+      - run: npm run test:warmup
       - run: npm run test:scroll
       - run: npm run test:admin-mobile
       - run: npm run test:admin-login
