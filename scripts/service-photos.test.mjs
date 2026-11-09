@@ -90,3 +90,18 @@ behaviour('only our own images change size', () => {
   assert.equal(photoSized('/assets/images/services/jumping-castles-sm.webp', 'md'), '/assets/images/services/jumping-castles-md.webp');
   assert.equal(photoSized('https://photos.example.com/my-castle.jpg', 'sm'), 'https://photos.example.com/my-castle.jpg');
 });
+
+test('owner service photo picker is connected to the admin and API',()=>{
+ const admin=read('src/app/pages/admin.page.ts');
+ const apiSource=read('src/app/core/booking-api.service.ts');
+ assert.ok(admin.includes('onServicePhotoSelected($event,item)'));
+ assert.ok(admin.includes('prepareServicePhoto(selected)'));
+ assert.ok(admin.includes('this.api.adminUploadServicePhoto('));
+ assert.ok(apiSource.includes('/photo'));
+});
+behaviour('photo picker only accepts JPG PNG WebP and has a size limit',async()=>{
+ const {servicePhotoValidation}=await import('../src/app/core/photo-upload.ts');
+ assert.equal(servicePhotoValidation({type:'image/jpeg',size:1000}),null);
+ assert.equal(servicePhotoValidation({type:'image/svg+xml',size:1000}), 'Choose a JPG, PNG or WebP image.');
+ assert.match(servicePhotoValidation({type:'image/png',size:20*1024*1024})||'',/15 MB/);
+});
