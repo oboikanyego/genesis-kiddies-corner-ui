@@ -27,7 +27,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
     <a routerLink="/" class="admin-login-back" aria-label="Back to home">
       <app-icon name="arrow-left" [size]="18"/><span>Back to Home</span>
     </a>
-    <div class="admin-login-icon" aria-hidden="true"><img src="/assets/images/brand/icon-120.webp" alt="" width="60" height="60"/></div>
+    <div class="admin-login-icon" aria-hidden="true"><img [src]="api.brandLogoUrl('email')" alt="" width="60" height="60"/></div>
     <div class="eyebrow pink-text">OWNER'S SPACE</div>
     <h1>Welcome back!</h1>
     <p>Sign in to manage requests for The Genesis Kiddies Corner.</p>
@@ -207,6 +207,20 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
           @if(contactStatus(); as st){<p class="notice contact-note" [class.success]="st.ok" [class.error]="!st.ok" [attr.role]="st.ok?'status':'alert'">{{st.text}}</p>}
         </form>
       </section>
+      <section class="panel settings-panel" aria-labelledby="brand-title">
+        <h2 id="brand-title">Business logo</h2>
+        <p class="panel-help">The logo is saved in your MongoDB and used by the website and booking email alerts. It moves with your database when your developer hands over the app.</p>
+        <div class="brand-settings-row">
+          <div class="brand-settings-preview"><img [src]="api.brandLogoUrl('md')" width="140" height="112" alt="Current Genesis Kiddies Corner logo"/></div>
+          <div>
+            <label for="brand-logo-picker" class="btn btn-outline">Choose new PNG logo</label>
+            <input id="brand-logo-picker" class="visually-hidden" type="file" accept="image/png" (change)="onBrandLogoSelected($event)" [disabled]="brandLogoBusy()" aria-describedby="brand-logo-help"/>
+            <p id="brand-logo-help" class="panel-help">Transparent PNG recommended, maximum 1 MB. Saving replaces the website logo and email logo together.</p>
+            @if(brandLogoBusy()){<p role="status" class="panel-help">Saving logo…</p>}
+            @if(brandLogoStatus(); as status){<p class="notice" [class.success]="status.ok" [class.error]="!status.ok" role="status">{{status.text}}</p>}
+          </div>
+        </div>
+      </section>
       <section class="panel settings-panel" aria-labelledby="owner-email-title">
         <h2 id="owner-email-title">Booking email alerts</h2>
         <p class="panel-help">Get a message in your personal inbox whenever a new booking arrives. Currently, only the business owner receives alerts. Customers are not emailed.</p>
@@ -267,6 +281,8 @@ export class AdminPage {
   contactStatus=signal<{ok:boolean;text:string}|null>(null);
   emailStatus=signal<{configured:boolean;recipientConfigured:boolean;sender:string;mode:string}|null>(null);
   emailTestBusy=signal(false);
+  brandLogoBusy=signal(false);
+  brandLogoStatus=signal<{ok:boolean;text:string}|null>(null);
   emailTestResult=signal<{ok:boolean;text:string}|null>(null);
 
   contactFields:{key:keyof ContactDetails;label:string;type:string;mode:string;placeholder:string;max:number;help?:string}[]=[
@@ -419,6 +435,28 @@ export class AdminPage {
     this.api.adminEmailStatus().subscribe({next:r=>this.emailStatus.set(r),error:()=>this.emailStatus.set({configured:false,recipientConfigured:false,sender:'Unknown',mode:'test'})});
     this.contactErrors.set({});this.contactStatus.set(null);
     this.api.adminSettings().subscribe({next:r=>{this.contact={...EMPTY_CONTACT,...r};this.contactLoaded.set(true);},error:e=>this.handleError(e)});
+  }
+  onBrandLogoSelected(event:Event){
+    const picker = event.target as HTMLInputElement;
+    const file = picker.files?.item(0);
+    picker.value = '';
+    if (!file) return;
+    if (file.type !== 'image/png' || file.size > 1024 * 1024 || file.size === 0) {
+      this.brandLogoStatus.set({ok:false,text:'Choose a PNG file smaller than 1 MB.'});
+      return;
+    }
+    this.brandLogoBusy.set(true);
+    this.brandLogoStatus.set(null);
+    this.api.adminUploadBrandLogo(file).subscribe({
+      next:() => {
+        this.brandLogoBusy.set(false);
+        this.brandLogoStatus.set({ok:true,text:'Logo saved in MongoDB and updated across the website and email templates.'});
+      },
+      error:e => {
+        this.brandLogoBusy.set(false);
+        this.brandLogoStatus.set({ok:false,text:e?.error?.message||'Unable to save the logo.'});
+      }
+    });
   }
   sendEmailTest(){
     if(this.emailTestBusy()||!this.emailStatus()?.configured)return;
