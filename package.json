@@ -10,6 +10,7 @@
     "test:preview": "node preview/smoke-test.cjs",
     "prebuild": "node scripts/generate-env.mjs",
     "test:env": "node --test scripts/generate-env.test.mjs",
+    "test:warmup": "node --test scripts/backend-warmup.test.mjs",
     "test:scroll": "node --test scripts/scroll-layout.test.mjs",
     "test:admin-mobile": "node --test scripts/admin-mobile.test.mjs",
     "test:blocked-dates": "node --test scripts/blocked-dates.test.mjs",
