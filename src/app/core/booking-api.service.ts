@@ -127,6 +127,11 @@ export class BookingApiService {
   adminUpdate(id: string, status: BookingStatus) { return this.http.patch<Booking>(`${this.url}/admin/bookings/${id}/status`, { status }, this.auth()); }
   adminServices() { return this.http.get<ServiceItem[]>(`${this.url}/admin/services`, this.auth()); }
   adminSave(service: ServiceItem) { return this.http.patch<ServiceItem>(`${this.url}/admin/services/${service._id}`, service, this.auth()); }
+  adminUploadServicePhoto(serviceId: string, photo: Blob) {
+    return this.http.post<{image:string}>(`${this.url}/admin/services/${serviceId}/photo`,photo,{
+      headers:this.auth().headers.set('Content-Type',photo.type)
+    });
+  }
   adminSettings() { return this.http.get<ContactDetails>(`${this.url}/admin/settings`, this.auth()); }
   adminSaveSettings(details: ContactDetails) { return this.http.put<ContactDetails>(`${this.url}/admin/settings`, details, this.auth()); }
 }
