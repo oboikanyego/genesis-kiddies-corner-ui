@@ -96,3 +96,10 @@ Sign in at `/admin` → **Services** → **Occasions we cater for**. Click **+ A
 The header, homepage, owner sidebar and admin login now fetch the **primary logo** from `<API_URL>/branding/logo` (a public PNG served by the backend's MongoDB `brandassets` collection). The original static logo is retained in the repository only as a build-time/hand-over asset, not as the displayed source. Browser favicons and PWA icons remain static files, as they must be available before Angular starts.
 
 For the client's own Netlify account, set `API_URL=https://YOUR_CLIENT_RENDER_SERVICE.onrender.com/api` in Netlify Environment and redeploy. This automatically changes logo requests and other API calls to the client's backend and MongoDB. The matching backend must have already seeded its `primary-logo` asset. Avoid hardcoding the previous Netlify or Cloudinary asset URLs.
+
+
+### Business-owner logo management
+
+**Admin → Settings → Business logo** now lets the client upload their own transparent PNG (less than 1 MB). The upload uses the admin's token and the Render endpoint `PUT /api/admin/branding/logo`, which stores the image in the MongoDB `brandassets` record already used by the website and email notices. The UI refreshes the branded image after saving, without relying on Cloudinary or deploying new Netlify assets.
+
+Client handover: use the client's Netlify site with `API_URL` set to their new Render endpoint (including `/api`), point Render at the client's MongoDB, set `PUBLIC_SITE_URL` and `CORS_ORIGINS` for the client domain, and set the client's own Resend credentials. The backend bundles the initial official logo for fresh databases. Existing bookings, photos, prices, owner settings and other database data need to be migrated separately. Static favicons/PWA icons still live in the UI repository.
