@@ -32,3 +32,8 @@ test('booking form reflects active configured occasion types',()=>{
  assert.ok(detail.includes('this.api.occasions$.subscribe'));
  assert.ok(detail.includes('occasions.map(o=>o.name)'));
 });
+
+test('occasion save sends only editable fields, not MongoDB metadata',()=>{
+ assert.match(api,/const \{_id,name,label,emoji,theme,photo,active,sortOrder\}=occasion/);
+ assert.ok(api.includes('{name,label,emoji,theme,photo,active,sortOrder},this.auth()'));
+});
