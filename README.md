@@ -103,3 +103,12 @@ For the client's own Netlify account, set `API_URL=https://YOUR_CLIENT_RENDER_SE
 **Admin → Settings → Business logo** now lets the client upload their own transparent PNG (less than 1 MB). The upload uses the admin's token and the Render endpoint `PUT /api/admin/branding/logo`, which stores the image in the MongoDB `brandassets` record already used by the website and email notices. The UI refreshes the branded image after saving, without relying on Cloudinary or deploying new Netlify assets.
 
 Client handover: use the client's Netlify site with `API_URL` set to their new Render endpoint (including `/api`), point Render at the client's MongoDB, set `PUBLIC_SITE_URL` and `CORS_ORIGINS` for the client domain, and set the client's own Resend credentials. The backend bundles the initial official logo for fresh databases. Existing bookings, photos, prices, owner settings and other database data need to be migrated separately. Static favicons/PWA icons still live in the UI repository.
+
+
+### Render Free wake-up and connection indicator
+
+The Ionic/Angular UI now calls the backend's `GET /health` endpoint on first app load, even when the visitor opens a static page. The URL is derived from the active `API_URL` configured on Netlify (e.g. `https://client-api.onrender.com/api` becomes `https://client-api.onrender.com/health`), so it works after transferring Netlify/Render/MongoDB to the client.
+
+A singleton connection service shares the startup request; an HTTP interceptor defers API operations while Render wakes. A compact, responsive status indicator appears only after 900ms (avoids a flicker for fast servers) with a friendly connection message. The website stays navigable. Health checks have bounded 30-second attempts plus two timed retries. If all attempts fail, the message changes to **Booking service unavailable** with a **Try again** button, so there is no infinite loader and booking calls aren't silently submitted.
+
+Service and occasion listings wait for readiness rather than reporting misleading offline/demo data during a normal cold start. After a successful manual retry, open listing pages automatically reload real MongoDB content. The existing `/health` endpoint is already provided by the API; no extra Render environment variable, timer-based ping service, or Render configuration is required. Cold starts on the free tier are still possible, but visitors can now see the progress clearly.
