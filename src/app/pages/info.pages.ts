@@ -4,7 +4,8 @@ import { RouterLink } from '@angular/router';
 import { BookingApiService } from '../core/booking-api.service';
 import { telHref, whatsappHref } from '../core/contact';
 import { ContactDetails, EMPTY_CONTACT } from '../core/models';
-import { GALLERY_EXTRAS } from '../core/site-config';
+import { DEFAULT_OCCASIONS, OCCASION_BACKGROUNDS } from '../core/site-config';
+import type { OccasionTheme } from '../core/models';
 import { IconComponent } from '../components/icon.component';
 import { PhotoPipe } from '../components/photo.pipe';
 
@@ -13,7 +14,7 @@ import { PhotoPipe } from '../components/photo.pipe';
 <section class="page-head info-head"><div class="container"><h1>About</h1><p>The Genesis Kiddies Corner</p></div></section>
 <div class="container info-wrap"><div class="info-card">
   <h2>Making Every Event Extra Special</h2>
-  <p>We bring the fun to kiddies parties, family days, graduation days, school events, community events, church events and more, with mascot characters, jumping castles, slush and ice cream machines, face painting and a stall &amp; sales service.</p>
+  <p>We bring fun to parties, celebrations and community gatherings, with mascot characters, jumping castles, slush and ice cream machines, face painting and a stall &amp; sales service.</p>
   <h3>How booking works</h3>
   <ol class="info-steps">
     <li>Choose your services and tell us about your event.</li>
@@ -30,12 +31,16 @@ export class AboutPage {}
   @for (s of (api.services$ | async); track s.slug) {
     <a class="gallery-tile" [routerLink]="['/services', s.slug]"><img [src]="s.image | photo:'md'" [alt]="s.name"/><span>{{s.name}}</span></a>
   }
-  @for (e of extras; track e.label) {
-    <figure class="gallery-tile"><img [src]="e.src" [alt]="e.label"/><figcaption>{{e.label}}</figcaption></figure>
+  @for (e of ((api.occasions$ | async) ?? fallbackOccasions); track e._id) {
+    <figure class="gallery-tile">
+      @if(e.photo){<img [src]="e.photo" [alt]="e.label"/>}
+      @else{<div class="occasion-art" [style.background]="background(e.theme)"><span aria-hidden="true">{{e.emoji}}</span></div>}
+      <figcaption>{{e.label}}</figcaption>
+    </figure>
   }
 </div>
 <p class="photo-note">Illustrative images. The exact equipment is confirmed when we review your booking.</p></div>` })
-export class GalleryPage { api = inject(BookingApiService); extras = GALLERY_EXTRAS; }
+export class GalleryPage { api = inject(BookingApiService); fallbackOccasions = DEFAULT_OCCASIONS; background(t:OccasionTheme){return OCCASION_BACKGROUNDS[t];} }
 
 /** Contact: shows the details the owner entered in Admin > Settings (read from the API); an empty detail is left out. */
 @Component({ selector: 'app-contact', standalone: true, imports: [RouterLink, IconComponent], template: `
