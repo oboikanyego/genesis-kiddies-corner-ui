@@ -4,18 +4,16 @@ import { BookingApiService } from '../core/booking-api.service';
 /**
  * The official The Genesis Kiddies Corner logo: a nearly square badge (tent, two children, name and "Where The Fun Begins!")
  * with a white outline, as a transparent image, so it sits on the white header, on the hero and on the dark owner sidebar.
- * Two sizes are served from the client's MongoDB through their own Render API.
+ * The owner-managed PNG is served from the client's MongoDB through their own Render API.
  * `large` asks for the bigger display size: on the phone homepage and in the owner sidebar. The width and height
- * attributes must match the image files (the brand test checks this), so the page does not jump while it loads.
+ * attributes retain the original logo aspect ratio so the page does not jump while it loads.
  */
 @Component({
   selector: 'app-logo',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<img class="logo" [class.logo-lg]="large"
-    [src]="api.brandLogoUrl('md')"
-    [attr.srcset]="api.brandLogoUrl('md') + ' 280w, ' + api.brandLogoUrl('lg') + ' 560w'"
-    [attr.sizes]="large ? '176px' : '100px'"
+    [src]="api.brandLogoUrl()"
     width="280" height="223" alt="The Genesis Kiddies Corner" decoding="async"/>`
 })
 export class LogoComponent {
