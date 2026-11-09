@@ -91,3 +91,12 @@ tap a field on a real iPhone or iPad as well.
 
 ## Configure occasions in the admin dashboard
 Sign in at `/admin` → **Services** → **Occasions we cater for**. Click **+ Add occasion** to provide a public title, booking event type, emoji, colour theme and order. After creating, upload a JPG/PNG/WebP picture using **Change picture**, preview it and press **Save changes**. Edit any existing tile, change its display order, or uncheck **Show on homepage and booking form** to hide it. Hiding does not delete past booking records. The homepage, Gallery and booking event-type dropdown are connected to the same active occasions in the API, rather than static lists. `Other` remains available for special events. Images are resized on the device and stored by the API in MongoDB, with no new paid integration.
+
+
+### MongoDB-owned brand images (client handover)
+
+The website header, homepage, owner sidebar and sign-in screen obtain the logo from `GET {API_URL}/branding/logo` on the Render backend. That image comes from MongoDB instead of a Netlify asset or a developer-owned Cloudinary account. The API also embeds the MongoDB logo in booking notification emails.
+
+The owner can change the shared logo from **Admin → Settings → Business logo** by selecting a PNG file under 1 MB. This calls authenticated `PUT {API_URL}/admin/branding/logo`. Existing logo elements refresh after successful upload and the updated picture is used for future owner emails.
+
+When moving to the client's accounts, configure Netlify's `API_URL` to the **new Render API URL ending in `/api`**, and configure the new Render service's MongoDB, admin, CORS, Resend, and `PUBLIC_SITE_URL` environment variables. Keep the backend's bundled brand seed file with its repository so an empty client database can initialize itself. Existing bookings, product photos and other MongoDB data still require a separate data migration. Favicons/PWA icons remain static.
