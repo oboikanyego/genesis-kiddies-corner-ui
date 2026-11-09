@@ -45,7 +45,7 @@ export class BookingApiService {
   occasions$=this.http.get<OccasionItem[]>(`${this.url}/occasions`).pipe(catchError(()=>of([] as OccasionItem[])));
   adminOccasions(){return this.http.get<OccasionItem[]>(`${this.url}/admin/occasions`,this.auth());}
   adminCreateOccasion(occasion:OccasionInput){return this.http.post<OccasionItem>(`${this.url}/admin/occasions`,occasion,this.auth());}
-  adminSaveOccasion(occasion:OccasionItem){const {_id,slug,...body}=occasion;return this.http.patch<OccasionItem>(`${this.url}/admin/occasions/${_id}`,body,this.auth());}
+  adminSaveOccasion(occasion:OccasionItem){const {_id,name,label,emoji,theme,photo,active,sortOrder}=occasion;return this.http.patch<OccasionItem>(`${this.url}/admin/occasions/${_id}`,{name,label,emoji,theme,photo,active,sortOrder},this.auth());}
   adminUploadOccasionPhoto(id:string,photo:Blob){return this.http.post<{photo:string}>(`${this.url}/admin/occasions/${id}/photo`,photo,{
     headers:this.auth().headers.set('Content-Type',photo.type)
   });}
