@@ -32,3 +32,12 @@ test('normal user pinch zoom remains enabled', () => {
   assert.ok(!index.includes('user-scalable=no'));
   assert.ok(!index.includes('maximum-scale=1'));
 });
+
+test('admin sign-in has an accessible Back to Home link before the login fields', () => {
+  const login = admin.slice(admin.indexOf('@if(!loggedIn())'), admin.indexOf('}@else{'));
+  assert.match(login, /<a routerLink="/" class="admin-login-back" aria-label="Back to home">/);
+  assert.match(login, /<app-icon name="arrow-left"/);
+  assert.ok(login.indexOf('class="admin-login-back"') < login.indexOf('name="email"'));
+  assert.ok(css.includes('.admin-login-back:focus-visible'));
+  assert.ok(css.includes('min-height:44px'));
+});
