@@ -2,14 +2,9 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, map, retry, shareReplay, tap, throwError, timeout, timer } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { backendHealthUrl } from './backend-health-url';
 
 export type BackendStatus = 'idle' | 'connecting' | 'ready' | 'offline';
-
-/** Render exposes /health outside the /api router. Keep the URL in the active deployment's account. */
-export function backendHealthUrl(apiUrl: string): string {
-  const api = apiUrl.replace(/\/+$/, '');
-  return (api.endsWith('/api') ? api.slice(0, -4) : api) + '/health';
-}
 
 /**
  * One shared startup health request, not one wake-up request per page.
