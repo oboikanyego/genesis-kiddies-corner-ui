@@ -91,3 +91,8 @@ tap a field on a real iPhone or iPad as well.
 
 ## Configure occasions in the admin dashboard
 Sign in at `/admin` → **Services** → **Occasions we cater for**. Click **+ Add occasion** to provide a public title, booking event type, emoji, colour theme and order. After creating, upload a JPG/PNG/WebP picture using **Change picture**, preview it and press **Save changes**. Edit any existing tile, change its display order, or uncheck **Show on homepage and booking form** to hide it. Hiding does not delete past booking records. The homepage, Gallery and booking event-type dropdown are connected to the same active occasions in the API, rather than static lists. `Other` remains available for special events. Images are resized on the device and stored by the API in MongoDB, with no new paid integration.
+
+## Brand logo from the client's own MongoDB
+The header, homepage, owner sidebar and admin login now fetch the **primary logo** from `<API_URL>/branding/logo` (a public PNG served by the backend's MongoDB `brandassets` collection). The original static logo is retained in the repository only as a build-time/hand-over asset, not as the displayed source. Browser favicons and PWA icons remain static files, as they must be available before Angular starts.
+
+For the client's own Netlify account, set `API_URL=https://YOUR_CLIENT_RENDER_SERVICE.onrender.com/api` in Netlify Environment and redeploy. This automatically changes logo requests and other API calls to the client's backend and MongoDB. The matching backend must have already seeded its `primary-logo` asset. Avoid hardcoding the previous Netlify or Cloudinary asset URLs.
