@@ -27,7 +27,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
     <a routerLink="/" class="admin-login-back" aria-label="Back to home">
       <app-icon name="arrow-left" [size]="18"/><span>Back to Home</span>
     </a>
-    <div class="admin-login-icon" aria-hidden="true"><img [src]="api.brandLogoUrl('email')" alt="" width="60" height="60"/></div>
+    <div class="admin-login-icon" aria-hidden="true"><img [src]="api.brandLogoUrl()" alt="" width="60" height="60"/></div>
     <div class="eyebrow pink-text">OWNER'S SPACE</div>
     <h1>Welcome back!</h1>
     <p>Sign in to manage requests for The Genesis Kiddies Corner.</p>
@@ -211,7 +211,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
         <h2 id="brand-title">Business logo</h2>
         <p class="panel-help">The logo is saved in your MongoDB and used by the website and booking email alerts. It moves with your database when your developer hands over the app.</p>
         <div class="brand-settings-row">
-          <div class="brand-settings-preview"><img [src]="api.brandLogoUrl('md')" width="140" height="112" alt="Current Genesis Kiddies Corner logo"/></div>
+          <div class="brand-settings-preview"><img [src]="api.brandLogoUrl()" width="140" height="112" alt="Current Genesis Kiddies Corner logo"/></div>
           <div>
             <label for="brand-logo-picker" class="btn btn-outline">Choose new PNG logo</label>
             <input id="brand-logo-picker" class="visually-hidden" type="file" accept="image/png" (change)="onBrandLogoSelected($event)" [disabled]="brandLogoBusy()" aria-describedby="brand-logo-help"/>
