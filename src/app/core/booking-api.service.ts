@@ -4,7 +4,6 @@ import { BehaviorSubject, catchError, map, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AdminStats, Booking, BookingPage, BookingRequest, BookingStatus, CartItem, ContactDetails, EventDraft, SavedBooking, ServiceItem, OccasionItem, OccasionInput } from './models';
 import { DEMO_SERVICES } from './demo-data';
-import { DEFAULT_OCCASIONS } from './site-config';
 import { servicePhotoFor } from './service-photos';
 import { todayIso } from './format';
 
@@ -43,7 +42,7 @@ export class BookingApiService {
   );
 
   /** Fresh per subscription; admin changes are reflected after a customer reloads. */
-  occasions$=this.http.get<OccasionItem[]>(`${this.url}/occasions`).pipe(catchError(()=>of(DEFAULT_OCCASIONS)));
+  occasions$=this.http.get<OccasionItem[]>(`${this.url}/occasions`).pipe(catchError(()=>of([] as OccasionItem[])));
   adminOccasions(){return this.http.get<OccasionItem[]>(`${this.url}/admin/occasions`,this.auth());}
   adminCreateOccasion(occasion:OccasionInput){return this.http.post<OccasionItem>(`${this.url}/admin/occasions`,occasion,this.auth());}
   adminSaveOccasion(occasion:OccasionItem){const {_id,slug,...body}=occasion;return this.http.patch<OccasionItem>(`${this.url}/admin/occasions/${_id}`,body,this.auth());}
