@@ -76,7 +76,7 @@ test('the logo files, the srcset and the width/height attributes all agree, so t
   assert.deepEqual(lg, { width: md.width * 2, height: md.height * 2 }, 'the large logo should be exactly twice the medium one');
   const logo = read('src/app/components/logo.component.ts');
   assert.ok(logo.includes(`width="${md.width}" height="${md.height}"`), `the <img> should say width="${md.width}" height="${md.height}"`);
-  assert.ok(logo.includes("'/branding/logo'"),'app logo must be fetched from the backend');
+  assert.ok(read('src/app/core/booking-api.service.ts').includes('/branding/logo?v='),'app logo must be fetched from the backend and cache-busted');
 });
 
 test('the header is tall enough for the logo with a little room above and below', () => {
