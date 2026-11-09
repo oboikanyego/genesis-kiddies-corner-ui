@@ -4,7 +4,8 @@ import { RouterLink } from '@angular/router';
 import { BookingApiService } from '../core/booking-api.service';
 import { DEMO_SERVICES } from '../core/demo-data';
 import { HERO_IMAGES, SERVICE_ICONS } from '../core/service-photos';
-import { OCCASIONS, SERVICE_EMOJI } from '../core/site-config';
+import { DEFAULT_OCCASIONS, OCCASION_BACKGROUNDS, SERVICE_EMOJI } from '../core/site-config';
+import type { OccasionTheme } from '../core/models';
 import { LogoComponent } from '../components/logo.component';
 @Component({ selector:'app-home', standalone:true, imports:[AsyncPipe,RouterLink,LogoComponent], template: `
 <section class="hero">
@@ -13,7 +14,7 @@ import { LogoComponent } from '../components/logo.component';
   <div class="container hero-inner">
     <a routerLink="/" class="hero-logo" aria-label="The Genesis Kiddies Corner"><app-logo [large]="true"/></a>
     <h1>Making Every<br/>Event <span class="hl-desk">Extra </span><span class="hl">Special</span></h1>
-    <p class="hero-lead">Kiddies parties · Family days<span class="desk-only"> · Graduation days</span><br/>School events · Community events<span class="desk-only"> · Church events</span><br/>and more</p>
+    <p class="hero-lead">Parties, celebrations and special moments<br/>for every family and community</p>
     <div class="hero-buttons"><a routerLink="/services" class="btn btn-pink btn-lg">Book Now</a><a routerLink="/services" class="btn btn-ghost btn-lg"><span>View <span class="desk-only">Our </span>Services</span></a></div>
   </div>
 </section>
@@ -27,8 +28,8 @@ import { LogoComponent } from '../components/logo.component';
 <section class="container occasions" id="occasions">
   <h2>Perfect for Every Occasion</h2>
   <div class="occasion-grid">
-    @for (o of occasions; track o.label) {
-      <figure class="occasion"><div class="occasion-art" [style.background]="o.tint">@if (o.photo) { <img [src]="o.photo" [alt]="o.label" loading="lazy"/> } @else { <span aria-hidden="true">{{o.emoji}}</span> }</div><figcaption>{{o.label}}</figcaption></figure>
+    @for (o of ((api.occasions$ | async) ?? fallbackOccasions); track o._id) {
+      <figure class="occasion"><div class="occasion-art" [style.background]="occasionBackground(o.theme)">@if (o.photo) { <img [src]="o.photo" [alt]="o.label" loading="lazy"/> } @else { <span aria-hidden="true">{{o.emoji}}</span> }</div><figcaption>{{o.label}}</figcaption></figure>
     }
   </div>
 </section>
@@ -37,7 +38,8 @@ export class HomePage {
   api = inject(BookingApiService);
   hero = HERO_IMAGES;
   icons = SERVICE_ICONS;
-  occasions = OCCASIONS;
+  fallbackOccasions = DEFAULT_OCCASIONS;
+  occasionBackground(theme:OccasionTheme):string{return OCCASION_BACKGROUNDS[theme] || OCCASION_BACKGROUNDS.pink;}
   emoji = SERVICE_EMOJI;
   /** Shown instantly while the live list loads, so the page never jumps. */
   demo = DEMO_SERVICES;
