@@ -1,6 +1,6 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { switchMap } from 'rxjs';
+import { switchMap, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { BackendConnectionService } from './backend-connection.service';
 
@@ -12,5 +12,11 @@ import { BackendConnectionService } from './backend-connection.service';
 export const backendWakeupInterceptor: HttpInterceptorFn = (req, next) => {
   const apiRoot = environment.apiUrl.replace(/\/+$/, '');
   if (req.url !== apiRoot && !req.url.startsWith(apiRoot + '/')) return next(req);
-  return inject(BackendConnectionService).ready().pipe(switchMap(() => next(req)));
+  const connection = inject(BackendConnectionService);
+  return connection.ready().pipe(
+    switchMap(() => next(req).pipe(
+      // Record only completed HTTP responses, never a request merely being sent.
+      tap(event => { if (event instanceof HttpResponse) connection.noteBackendActivity(); })
+    ))
+  );
 };
