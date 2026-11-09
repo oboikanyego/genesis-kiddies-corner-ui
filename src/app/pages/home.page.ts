@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { BookingApiService } from '../core/booking-api.service';
 import { DEMO_SERVICES } from '../core/demo-data';
 import { HERO_IMAGES, SERVICE_ICONS } from '../core/service-photos';
-import { DEFAULT_OCCASIONS, OCCASION_BACKGROUNDS, SERVICE_EMOJI } from '../core/site-config';
+import { OCCASION_BACKGROUNDS, SERVICE_EMOJI } from '../core/site-config';
 import type { OccasionTheme } from '../core/models';
 import { LogoComponent } from '../components/logo.component';
 @Component({ selector:'app-home', standalone:true, imports:[AsyncPipe,RouterLink,LogoComponent], template: `
@@ -28,7 +28,7 @@ import { LogoComponent } from '../components/logo.component';
 <section class="container occasions" id="occasions">
   <h2>Perfect for Every Occasion</h2>
   <div class="occasion-grid">
-    @for (o of ((api.occasions$ | async) ?? fallbackOccasions); track o._id) {
+    @for (o of ((api.occasions$ | async) ?? []); track o._id) {
       <figure class="occasion"><div class="occasion-art" [style.background]="occasionBackground(o.theme)">@if (o.photo) { <img [src]="o.photo" [alt]="o.label" loading="lazy"/> } @else { <span aria-hidden="true">{{o.emoji}}</span> }</div><figcaption>{{o.label}}</figcaption></figure>
     }
   </div>
@@ -38,7 +38,6 @@ export class HomePage {
   api = inject(BookingApiService);
   hero = HERO_IMAGES;
   icons = SERVICE_ICONS;
-  fallbackOccasions = DEFAULT_OCCASIONS;
   occasionBackground(theme:OccasionTheme):string{return OCCASION_BACKGROUNDS[theme] || OCCASION_BACKGROUNDS.pink;}
   emoji = SERVICE_EMOJI;
   /** Shown instantly while the live list loads, so the page never jumps. */
