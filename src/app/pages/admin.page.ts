@@ -13,6 +13,8 @@ import { IconComponent } from '../components/icon.component';
 import { LogoComponent } from '../components/logo.component';
 import { MonthCalendarComponent } from '../components/month-calendar.component';
 import { PhotoPipe } from '../components/photo.pipe';
+import { switchMap } from 'rxjs';
+import { prepareServicePhoto } from '../core/photo-upload';
 
 type AdminTab = 'dashboard' | 'bookings' | 'calendar' | 'services' | 'settings';
 const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings: 'Bookings', calendar: 'Calendar', services: 'Services', settings: 'Settings' };
@@ -126,7 +128,15 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
 
     @if(tab()==='services'){
     <div class="admin-services"><div class="admin-services-intro"><h2>Available services</h2><p>Control stock, pricing, availability and whether an item appears in the customer catalogue. Prices are optional.</p></div>
-    @for(item of services();track item._id){<article class="panel manage-service"><img [src]="photo(item) | photo:'sm'" [alt]="item.name"/><div class="manage-content"><div class="manage-title"><h3>{{item.name}}</h3><span class="category-tag">{{item.category}}</span></div><div class="manage-fields"><label><span>Price (R)</span><input type="number" min="0" [ngModel]="item.price" (ngModelChange)="item.price=$event===null||$event===''?null:+$event" placeholder="On request"/></label><label><span>Available stock</span><input type="number" min="1" [(ngModel)]="item.stock"/></label><div class="blocked-date-editor">
+    @for(item of services();track item._id){<article class="panel manage-service"><div class="service-photo-editor">
+      <img [src]="(previewPhoto(item) | photo:'sm')" [alt]="item.name" class="service-photo-preview"/>
+      <label class="service-photo-pick">
+        <span>Change photo</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onServicePhotoSelected($event,item)" [attr.aria-label]="'Change photo for '+item.name"/>
+      </label>
+      @if(pendingPhotos()[item._id]){<small class="service-photo-pending">New photo selected — press Save changes</small><button type="button" class="service-photo-cancel" (click)="clearPendingPhoto(item._id)">Cancel new photo</button>}
+      <small class="service-photo-hint">JPG, PNG or WebP · auto-resized</small>
+    </div><div class="manage-content"><div class="manage-title"><h3>{{item.name}}</h3><span class="category-tag">{{item.category}}</span></div><div class="manage-fields"><label><span>Price (R)</span><input type="number" min="0" [ngModel]="item.price" (ngModelChange)="item.price=$event===null||$event===''?null:+$event" placeholder="On request"/></label><label><span>Available stock</span><input type="number" min="1" [(ngModel)]="item.stock"/></label><div class="blocked-date-editor">
       <div class="blocked-date-heading"><span class="blocked-date-label">Blocked dates</span><span class="blocked-date-counter">{{item.blockedDates.length}} / 100</span></div>
       <button type="button" class="blocked-date-trigger" (click)="openBlockedDateCalendar(item)" [disabled]="item.blockedDates.length >= 100" [attr.aria-label]="'Open blocked dates calendar for ' + item.name">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
@@ -226,6 +236,7 @@ export class AdminPage {
     {key:'email',label:'Email address',type:'email',mode:'email',placeholder:'e.g. hello@yourbusiness.co.za',max:180},
     {key:'area',label:'Area we serve',type:'text',mode:'text',placeholder:'e.g. Johannesburg and surrounds',max:120}
   ];
+  pendingPhotos=signal<Record<string,Blob>>({}); photoPreviews=signal<Record<string,string>>({});
   bookings=signal<Booking[]>([]); services=signal<ServiceItem[]>([]); filter=''; page=signal(1); pages=signal(1); total=signal(0);
   /** The search box above the booking list: looks in name, email, phone number (any way it was written) and reference. One character is not a search. */
   searchText=signal(''); searching=computed(()=>this.searchText().trim().length>=2);
@@ -375,6 +386,46 @@ export class AdminPage {
   }
   /** Shows the result of a save and scrolls it into view: on a phone it would otherwise sit below the buttons, behind the bottom bar. */
   showContactStatus(status:{ok:boolean;text:string}){this.contactStatus.set(status);setTimeout(()=>document.querySelector('.contact-note')?.scrollIntoView({block:'nearest'}));}
-  saveService(s:ServiceItem){this.busy.set(true);this.error.set('');this.api.adminSave(s).subscribe({next:r=>{this.busy.set(false);this.message.set(`${r.name} updated successfully.`);},error:e=>{this.busy.set(false);this.handleError(e);}});}
+  previewPhoto(item:ServiceItem):string{return this.photoPreviews()[item._id] || this.photo(item);}
+  async onServicePhotoSelected(event:Event,item:ServiceItem){
+    const picker=event.target as HTMLInputElement;
+    const selected=picker.files?.item(0);
+    picker.value='';
+    if(!selected)return;
+    this.error.set('');
+    try {
+      const photo=await prepareServicePhoto(selected);
+      const url=URL.createObjectURL(photo);
+      this.clearPendingPhoto(item._id);
+      this.pendingPhotos.update(current=>({...current,[item._id]:photo}));
+      this.photoPreviews.update(current=>({...current,[item._id]:url}));
+    } catch(e) {
+      this.error.set(e instanceof Error?e.message:'Could not prepare the selected image.');
+    }
+  }
+  clearPendingPhoto(id:string){
+    const previous=this.photoPreviews()[id];
+    if(previous) URL.revokeObjectURL(previous);
+    this.photoPreviews.update(current=>{const next={...current};delete next[id];return next;});
+    this.pendingPhotos.update(current=>{const next={...current};delete next[id];return next;});
+  }
+  saveService(s:ServiceItem){
+    if(this.busy())return;
+    this.busy.set(true);this.error.set('');
+    const photo=this.pendingPhotos()[s._id];
+    const save=photo
+      ? this.api.adminUploadServicePhoto(s._id,photo).pipe(switchMap(({image})=>this.api.adminSave({...s,image})))
+      : this.api.adminSave(s);
+    save.subscribe({
+      next:updated=>{
+        this.busy.set(false);
+        s.image=updated.image;
+        this.services.update(items=>items.map(item=>item._id===updated._id?{...item,...updated}:item));
+        this.clearPendingPhoto(s._id);
+        this.message.set(`${updated.name} updated successfully.`);
+      },
+      error:e=>{this.busy.set(false);this.handleError(e);}
+    });
+  }
   handleError(e:any){if(e.status===401){this.api.logout();this.loggedIn.set(false);this.error.set('Your session has expired. Please sign in again.');return;}this.error.set(e.error?.message||'Something went wrong. Please try again.');}
 }
