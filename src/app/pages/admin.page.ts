@@ -207,6 +207,20 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
           @if(contactStatus(); as st){<p class="notice contact-note" [class.success]="st.ok" [class.error]="!st.ok" [attr.role]="st.ok?'status':'alert'">{{st.text}}</p>}
         </form>
       </section>
+      <section class="panel settings-panel" aria-labelledby="brand-title">
+        <h2 id="brand-title">Business logo</h2>
+        <p class="panel-help">This logo is stored in your MongoDB and used on the website and in booking emails. It stays with the business when the app is transferred to your own accounts.</p>
+        <div class="brand-settings-row">
+          <div class="brand-settings-preview"><img [src]="api.brandLogoUrl()" alt="Current Genesis Kiddies Corner logo" width="140" height="112"/></div>
+          <div>
+            <label for="brand-logo-picker" class="btn btn-outline">Choose new PNG logo</label>
+            <input id="brand-logo-picker" class="visually-hidden" type="file" accept="image/png" (change)="onBrandLogoSelected($event)" [disabled]="brandLogoBusy()" aria-describedby="brand-logo-help"/>
+            <p id="brand-logo-help" class="panel-help">Transparent PNG recommended, maximum 1 MB. The new image will be used for both the website and future email alerts.</p>
+            @if(brandLogoBusy()){<p role="status" class="panel-help">Saving the new logo…</p>}
+            @if(brandLogoStatus(); as result){<p role="status" class="notice" [class.success]="result.ok" [class.error]="!result.ok">{{result.text}}</p>}
+          </div>
+        </div>
+      </section>
       <section class="panel settings-panel" aria-labelledby="owner-email-title">
         <h2 id="owner-email-title">Booking email alerts</h2>
         <p class="panel-help">Get a message in your personal inbox whenever a new booking arrives. Currently, only the business owner receives alerts. Customers are not emailed.</p>
@@ -267,6 +281,8 @@ export class AdminPage {
   contactStatus=signal<{ok:boolean;text:string}|null>(null);
   emailStatus=signal<{configured:boolean;recipientConfigured:boolean;sender:string;mode:string}|null>(null);
   emailTestBusy=signal(false);
+  brandLogoBusy=signal(false);
+  brandLogoStatus=signal<{ok:boolean;text:string}|null>(null);
   emailTestResult=signal<{ok:boolean;text:string}|null>(null);
 
   contactFields:{key:keyof ContactDetails;label:string;type:string;mode:string;placeholder:string;max:number;help?:string}[]=[
@@ -282,7 +298,7 @@ export class AdminPage {
   private searchTimer:any=null; private bookingsRequest=0;
   calMonth=signal(todayIso().slice(0,7)); calItems=signal<Booking[]>([]); calSelected=signal<string|null>(null);
   selected=signal<Booking|null>(null);
-  apiUrl=environment.apiUrl; brandLogoUrl=environment.apiUrl.replace(/\/$/,'')+'/branding/logo'; money=formatMoney; label=statusLabel;
+  apiUrl=environment.apiUrl; get brandLogoUrl(){return this.api.brandLogoUrl();} money=formatMoney; label=statusLabel;
   title=computed(()=>TAB_TITLES[this.tab()]);
   /** Next events still to happen. Older API versions do not send this list, so work it out from the recent bookings. */
   upcoming=computed<Booking[]>(()=>{
@@ -419,6 +435,26 @@ export class AdminPage {
     this.api.adminEmailStatus().subscribe({next:r=>this.emailStatus.set(r),error:()=>this.emailStatus.set({configured:false,recipientConfigured:false,sender:'Unknown',mode:'test'})});
     this.contactErrors.set({});this.contactStatus.set(null);
     this.api.adminSettings().subscribe({next:r=>{this.contact={...EMPTY_CONTACT,...r};this.contactLoaded.set(true);},error:e=>this.handleError(e)});
+  }
+  onBrandLogoSelected(event:Event){
+    const picker=event.target as HTMLInputElement;
+    const file=picker.files?.item(0);
+    picker.value='';
+    if(!file)return;
+    if(file.type!=='image/png'||file.size===0||file.size>1024*1024){
+      this.brandLogoStatus.set({ok:false,text:'Please choose a valid PNG file smaller than 1 MB.'});return;
+    }
+    this.brandLogoBusy.set(true);this.brandLogoStatus.set(null);
+    this.api.adminUploadBrandLogo(file).subscribe({
+      next:()=>{
+        this.brandLogoBusy.set(false);
+        this.brandLogoStatus.set({ok:true,text:'Logo saved to MongoDB. The website and future booking emails now use it.'});
+      },
+      error:e=>{
+        this.brandLogoBusy.set(false);
+        this.brandLogoStatus.set({ok:false,text:e?.error?.message||'The logo could not be saved.'});
+      }
+    });
   }
   sendEmailTest(){
     if(this.emailTestBusy()||!this.emailStatus()?.configured)return;
