@@ -141,6 +141,9 @@ export class BookingApiService {
       headers:this.auth().headers.set('Content-Type',photo.type)
     });
   }
+  /** Owner inbox only; no customer emails without a verified sender domain. */
+  adminEmailStatus() { return this.http.get<{configured:boolean;recipientConfigured:boolean;sender:string;mode:string}>(`${this.url}/admin/email/status`,this.auth()); }
+  adminSendTestEmail() { return this.http.post<{sent:boolean;id:string}>(`${this.url}/admin/email/test`,{},this.auth()); }
   adminSettings() { return this.http.get<ContactDetails>(`${this.url}/admin/settings`, this.auth()); }
   adminSaveSettings(details: ContactDetails) { return this.http.put<ContactDetails>(`${this.url}/admin/settings`, details, this.auth()); }
 }
