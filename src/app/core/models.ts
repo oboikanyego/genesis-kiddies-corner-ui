@@ -62,6 +62,13 @@ export interface AdminStats {
 /** The contact details the owner enters in Admin > Settings. An empty string means "not set", and it is not shown on the website. */
 export interface ContactDetails { phone: string; whatsapp: string; email: string; area: string; }
 export const EMPTY_CONTACT: ContactDetails = { phone: '', whatsapp: '', email: '', area: '' };
+/** Public occasion tiles and the booking options controlled by the owner. */
+export type OccasionTheme = 'pink'|'blue'|'purple'|'orange'|'mint'|'yellow';
+export interface OccasionItem {
+  _id:string; slug:string; name:string; label:string; emoji:string;
+  theme:OccasionTheme; photo:string; active:boolean; sortOrder:number;
+}
+export type OccasionInput = Pick<OccasionItem,'name'|'label'|'emoji'|'theme'|'photo'|'active'|'sortOrder'>;
 export const EVENT_TYPES = ['Kiddies Party','Family Day','Graduation','School Event','Community Event','Church Event','Other'];
 export const MODE_LABELS: Record<BookingMode, string> = { rental: 'Equipment rental', staffed: 'Staffed service', stall: 'Set up a stall' };
 /** Every half hour from 06:00 to 22:00, for the start/end time drop-downs. */
