@@ -138,7 +138,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
       <small class="service-photo-hint">JPG, PNG or WebP · auto-resized</small>
     </div><div class="manage-content"><div class="manage-title"><h3>{{item.name}}</h3><span class="category-tag">{{item.category}}</span></div><div class="manage-fields"><label><span>Price (R)</span><input type="number" min="0" [ngModel]="item.price" (ngModelChange)="item.price=$event===null||$event===''?null:+$event" placeholder="On request"/></label><label><span>Available stock</span><input type="number" min="1" [(ngModel)]="item.stock"/></label><div class="blocked-date-editor">
       <div class="blocked-date-heading"><span class="blocked-date-label">Blocked dates</span><span class="blocked-date-counter">{{item.blockedDates.length}} / 100</span></div>
-      <button type="button" class="blocked-date-trigger" (click)="openBlockedDateCalendar(item)" [disabled]="item.blockedDates.length >= 100" [attr.aria-label]="'Open blocked dates calendar for ' + item.name">
+      <button type="button" class="blocked-date-trigger" (click)="openBlockedDateCalendar(item)" [attr.aria-label]="'Open blocked dates calendar for ' + item.name">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
         <span>Choose blocked dates</span><span class="blocked-date-trigger-chevron" aria-hidden="true">›</span>
       </button>
@@ -159,8 +159,10 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
               <div><span class="blocked-date-modal-kicker">BLOCK DATES</span><h2>{{activeBlockedService()?.name}}</h2><p>Choose a date to make this service unavailable.</p></div>
               <button class="blocked-date-modal-close" type="button" (click)="closeBlockedDateCalendar()" aria-label="Close calendar">×</button>
             </div>
-            <ion-datetime class="blocked-date-calendar" presentation="date" locale="en-ZA" [min]="todayIsoLocal()" [isDateEnabled]="isBlockedDateEnabled" [showDefaultButtons]="false" (ionChange)="onBlockedDatePicked($event.detail.value)"></ion-datetime>
-            <p class="blocked-date-modal-hint">Grey days cannot be selected (past or already blocked).</p>
+            @if(activeBlockedService()){
+              <ion-datetime class="blocked-date-calendar" presentation="date" locale="en-ZA" [min]="todayIsoLocal()" [isDateEnabled]="blockedDateFilter()" [showDefaultButtons]="false" (ionChange)="onBlockedDatePicked($event.detail.value)"></ion-datetime>
+            }
+            <p class="blocked-date-modal-hint">Grey days cannot be selected (past or already blocked). @if((activeBlockedService()?.blockedDates?.length ?? 0) >= 100){You have reached the 100-date limit. Remove a blocked date to add another.}</p>
             <button class="blocked-date-modal-done" type="button" (click)="closeBlockedDateCalendar()">Done</button>
           </div>
         </ng-template>
@@ -315,6 +317,9 @@ export class AdminPage {
   photo(item:ServiceItem):string{return servicePhotoFor(item);}
   monthLabel(date:string):string {return new Date(`${date}T12:00:00`).toLocaleDateString('en-ZA',{month:'short'});}
   activeBlockedService = signal<ServiceItem | null>(null);
+  // Ionic renders days as soon as the datepicker mounts. Build the filter for the
+  // selected service before mounting, rather than reading a null selection at startup.
+  blockedDateFilter = signal<(day: string) => boolean>(() => true);
 
   todayIsoLocal(): string {
     const now = new Date();
@@ -328,10 +333,15 @@ export class AdminPage {
   };
 
   openBlockedDateCalendar(item: ServiceItem): void {
-    if (item.blockedDates.length >= 100) {
-      this.error.set('You can block up to 100 dates per service.');
-      return;
-    }
+    const today = this.todayIsoLocal();
+    const alreadyBlocked = new Set(item.blockedDates ?? []);
+    // Ionic's callback is evaluated for visible calendar days. Capture the current
+    // service's dates upfront so initial rendering never disables the entire month.
+    this.blockedDateFilter.set((date: string) => {
+      const day = date.slice(0, 10);
+      return day >= today && !alreadyBlocked.has(day);
+    });
+    this.error.set('');
     this.activeBlockedService.set(item);
   }
 
