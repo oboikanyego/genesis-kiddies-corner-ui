@@ -2,8 +2,9 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, catchError, map, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AdminStats, Booking, BookingPage, BookingRequest, BookingStatus, CartItem, ContactDetails, EventDraft, SavedBooking, ServiceItem } from './models';
+import { AdminStats, Booking, BookingPage, BookingRequest, BookingStatus, CartItem, ContactDetails, EventDraft, SavedBooking, ServiceItem, OccasionItem, OccasionInput } from './models';
 import { DEMO_SERVICES } from './demo-data';
+import { DEFAULT_OCCASIONS } from './site-config';
 import { servicePhotoFor } from './service-photos';
 import { todayIso } from './format';
 
@@ -40,6 +41,15 @@ export class BookingApiService {
     tap(() => this.catalogOffline.set(false)),
     catchError(() => { this.catalogOffline.set(true); return of(DEMO_SERVICES); })
   );
+
+  /** Fresh per subscription; admin changes are reflected after a customer reloads. */
+  occasions$=this.http.get<OccasionItem[]>(`${this.url}/occasions`).pipe(catchError(()=>of(DEFAULT_OCCASIONS)));
+  adminOccasions(){return this.http.get<OccasionItem[]>(`${this.url}/admin/occasions`,this.auth());}
+  adminCreateOccasion(occasion:OccasionInput){return this.http.post<OccasionItem>(`${this.url}/admin/occasions`,occasion,this.auth());}
+  adminSaveOccasion(occasion:OccasionItem){const {_id,slug,...body}=occasion;return this.http.patch<OccasionItem>(`${this.url}/admin/occasions/${_id}`,body,this.auth());}
+  adminUploadOccasionPhoto(id:string,photo:Blob){return this.http.post<{photo:string}>(`${this.url}/admin/occasions/${id}/photo`,photo,{
+    headers:this.auth().headers.set('Content-Type',photo.type)
+  });}
 
   private restoreCart(): CartItem[] {
     const arr = readJson<CartItem[]>(CART_KEY, []);
