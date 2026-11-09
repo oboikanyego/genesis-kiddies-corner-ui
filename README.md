@@ -87,3 +87,7 @@ Two rules in `src/styles.scss` keep the page from zooming in and getting stuck:
 
 `npm run test:touch-zoom` protects both. It cannot run an iPhone: after changing form styles,
 tap a field on a real iPhone or iPad as well.
+
+
+## Configure occasions in the admin dashboard
+Sign in at `/admin` → **Services** → **Occasions we cater for**. Click **+ Add occasion** to provide a public title, booking event type, emoji, colour theme and order. After creating, upload a JPG/PNG/WebP picture using **Change picture**, preview it and press **Save changes**. Edit any existing tile, change its display order, or uncheck **Show on homepage and booking form** to hide it. Hiding does not delete past booking records. The homepage, Gallery and booking event-type dropdown are connected to the same active occasions in the API, rather than static lists. `Other` remains available for special events. Images are resized on the device and stored by the API in MongoDB, with no new paid integration.
