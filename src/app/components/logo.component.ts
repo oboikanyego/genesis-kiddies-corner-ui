@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { environment } from '../../environments/environment';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
+import { BookingApiService } from '../core/booking-api.service';
 
 /** The visible logo is served from the current client's MongoDB via their API. */
 @Component({
@@ -7,11 +7,11 @@ import { environment } from '../../environments/environment';
   standalone:true,
   changeDetection:ChangeDetectionStrategy.OnPush,
   template:`<img class="logo" [class.logo-lg]="large"
-    [src]="logoUrl"
+    [src]="api.brandLogoUrl()"
     [attr.sizes]="large ? '176px' : '100px'"
     width="280" height="223" alt="The Genesis Kiddies Corner" decoding="async"/>`
 })
 export class LogoComponent {
   @Input() large=false;
-  readonly logoUrl=environment.apiUrl.replace(/\/$/,'')+'/branding/logo';
+  readonly api=inject(BookingApiService);
 }
