@@ -216,7 +216,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
           <p class="panel-help">Sender: {{status.sender}}. API keys are configured on Render, never in this website.</p>
           <button type="button" class="btn btn-outline" (click)="sendEmailTest()" [disabled]="!status.configured||emailTestBusy()">{{emailTestBusy()?'Sending test…':'Send test email'}}</button>
         } @else {<p class="panel-help">Loading email configuration…</p>}
-        @if(emailTestResult();as result){<p class="notice" [class.success]="result.ok" [class.error]="!result.ok" role="status">{{result.text}}</p>}
+        @if(emailTestResult(); as result){<p class="notice" [class.success]="result.ok" [class.error]="!result.ok" role="status">{{result.text}}</p>}
       </section>
       <section class="panel settings-panel">
         <h2>Your account</h2>
