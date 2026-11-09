@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, map, retry, shareReplay, tap, throwError, timeout, timer } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { backendHealthUrl } from './backend-health-url';
+import { backendHealthUrl, shouldRecheckBackend } from './backend-health-url';
 
 export type BackendStatus = 'idle' | 'connecting' | 'ready' | 'offline';
 
@@ -19,10 +19,44 @@ export class BackendConnectionService {
   private readonly statusSubject = new BehaviorSubject<BackendStatus>('idle');
   readonly status$ = this.statusSubject.asObservable();
   private activeRequest?: Observable<void>;
+  private lastBackendContactAt: number | null = null;
+  private awaySince: number | null = null;
 
   private changeStatus(status: BackendStatus): void {
     this.status.set(status);
     this.statusSubject.next(status);
+  }
+
+  /** A successful API response confirms the Render service is already running. */
+  noteBackendActivity(): void {
+    this.lastBackendContactAt = Date.now();
+  }
+
+  /** Called on tab blur/hidden, without running background polling or keep-alive timers. */
+  noteAway(): void {
+    this.awaySince ??= Date.now();
+  }
+
+  /**
+   * On focus/visibility return, wake the backend if away for >=15 minutes.
+   * Browsers throttle background timers, so this uses wall-clock time instead.
+   * Duplicate focus + visibility events share the same in-flight health request.
+   */
+  onReturn(): void {
+    if (typeof document !== 'undefined' && document.hidden) return;
+    const now = Date.now();
+    const wasAwayLongEnough = this.awaySince !== null && shouldRecheckBackend(this.awaySince, now);
+    this.awaySince = null;
+    if (this.status() === 'connecting') return;
+    if (wasAwayLongEnough) {
+      // Even an earlier offline failure deserves a fresh attempt after a long absence.
+      this.activeRequest = undefined;
+      this.changeStatus('idle');
+      this.start();
+    } else if (this.status() === 'ready' && shouldRecheckBackend(this.lastBackendContactAt, now)) {
+      // Also covers a restored tab where the browser omitted a blur/hidden event.
+      this.start();
+    }
   }
 
   /** All callers share the same connection attempt. Each HTTP request still runs independently after readiness. */
@@ -30,7 +64,13 @@ export class BackendConnectionService {
     if (this.status() === 'offline') {
       return throwError(() => new Error('The booking service is currently unavailable. Please try connecting again.'));
     }
-    if (this.activeRequest) return this.activeRequest;
+    if (this.activeRequest) {
+      // A successful, cached health result is safe only while the backend was active recently.
+      if (this.status() === 'connecting' || !shouldRecheckBackend(this.lastBackendContactAt, Date.now())) {
+        return this.activeRequest;
+      }
+      this.activeRequest = undefined;
+    }
 
     this.changeStatus('connecting');
     this.indicatorVisible.set(false);
@@ -49,6 +89,7 @@ export class BackendConnectionService {
       tap({
         next: () => {
           clearTimeout(noticeTimer);
+          this.noteBackendActivity();
           this.changeStatus('ready');
           this.indicatorVisible.set(false);
         },
