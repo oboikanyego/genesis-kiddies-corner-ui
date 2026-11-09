@@ -4,6 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
 import { BookingApiService } from './core/booking-api.service';
+import { BackendConnectionService } from './core/backend-connection.service';
 import { IconComponent } from './components/icon.component';
 import { LogoComponent } from './components/logo.component';
 @Component({
@@ -31,6 +32,24 @@ import { LogoComponent } from './components/logo.component';
         <footer class="site-footer"><div class="container footer-inner"><span>© {{year}} The Genesis Kiddies Corner</span><span class="footer-links"><a routerLink="/services">Services</a><a routerLink="/my-bookings">My Bookings</a><a routerLink="/admin">Admin</a></span></div></footer>
         </div>
       </div>
+      @if (connection.indicatorVisible()) {
+        <section class="backend-connection-status" [class.backend-offline]="connection.status()==='offline'" [attr.role]="connection.status()==='offline' ? 'alert' : 'status'" aria-live="polite" aria-atomic="true">
+          @if (connection.status()==='offline') {
+            <span class="backend-connection-icon" aria-hidden="true"><app-icon name="refresh" [size]="20"/></span>
+            <div class="backend-connection-copy">
+              <strong>Booking service unavailable</strong>
+              <span>We couldn't connect just now. You can still browse, but booking needs a connection.</span>
+            </div>
+            <button type="button" class="backend-retry-button" (click)="connection.retryConnection()">Try again</button>
+          } @else {
+            <span class="backend-connection-spinner" aria-hidden="true"></span>
+            <div class="backend-connection-copy">
+              <strong>Connecting to our booking service</strong>
+              <span>It's waking up. You can browse while we get everything ready.</span>
+            </div>
+          }
+        </section>
+      }
       <nav class="mobile-nav" [class.admin-route-hidden]="isAdmin()" [class.flow-hidden]="isFlow()" aria-label="Mobile navigation">
           <a routerLink="/" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="selected"><app-icon name="home" [size]="24"/>Home</a>
           <a routerLink="/services" routerLinkActive="selected"><app-icon name="services" [size]="24"/>Services</a>
@@ -43,10 +62,13 @@ import { LogoComponent } from './components/logo.component';
 export class AppComponent {
   @ViewChild("scrollHost") private scrollHost?: ElementRef<HTMLDivElement>;
   api=inject(BookingApiService);
+  connection=inject(BackendConnectionService);
   router=inject(Router);
   year = new Date().getFullYear();
 
   constructor() {
+    // Wake Render on the first page load, without blocking static navigation.
+    this.connection.start();
     // Our dedicated app scroller owns scroll position because Ionic fixes document/body.
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
