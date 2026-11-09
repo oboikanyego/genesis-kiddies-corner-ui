@@ -24,6 +24,9 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
 @if(!loggedIn()){
 <div class="admin-login-wrap">
   <form class="surface-card admin-login" (ngSubmit)="login()" aria-label="Owner sign in">
+    <a routerLink="/" class="admin-login-back" aria-label="Back to home">
+      <app-icon name="arrow-left" [size]="18"/><span>Back to Home</span>
+    </a>
     <div class="admin-login-icon" aria-hidden="true"><img src="/assets/images/brand/icon-120.webp" alt="" width="60" height="60"/></div>
     <div class="eyebrow pink-text">OWNER'S SPACE</div>
     <h1>Welcome back!</h1>
