@@ -43,7 +43,8 @@ test('the app manifest is valid and every icon it lists exists', () => {
 
 test('the logo component shows the supplied logo with a text alternative; the old drawn logo and its font are gone', () => {
   const logo = read('src/app/components/logo.component.ts');
-  assert.ok(logo.includes('/assets/images/brand/logo-md.webp') && logo.includes('/assets/images/brand/logo-lg.webp'));
+  assert.ok(logo.includes("environment.apiUrl.replace(/\\/$/,'')+'/branding/logo'"),'visible logo must load from API/MongoDB');
+  assert.ok(!logo.includes('srcset='),'logo source must not silently switch to static assets');
   assert.ok(logo.includes('alt="The Genesis Kiddies Corner"'));
   assert.ok(!logo.includes('<svg'));
   assert.ok(!read('src/index.html').includes('Fredoka'));
@@ -55,7 +56,7 @@ test('the logo is used in the header, on the phone homepage and in the owner sid
   assert.ok(read('src/app/pages/home.page.ts').includes('<app-logo [large]="true"/>'));
   const admin = read('src/app/pages/admin.page.ts');
   assert.ok(admin.includes('<app-logo [large]="true"/>'));
-  assert.ok(admin.includes('/assets/images/brand/icon-120.webp'));
+  assert.ok(admin.includes('[src]="brandLogoUrl"'),'login logo must use MongoDB endpoint');
 });
 
 /** The pixel size of a WebP file (reads the VP8X, VP8 and VP8L layouts). */
@@ -75,7 +76,7 @@ test('the logo files, the srcset and the width/height attributes all agree, so t
   assert.deepEqual(lg, { width: md.width * 2, height: md.height * 2 }, 'the large logo should be exactly twice the medium one');
   const logo = read('src/app/components/logo.component.ts');
   assert.ok(logo.includes(`width="${md.width}" height="${md.height}"`), `the <img> should say width="${md.width}" height="${md.height}"`);
-  assert.ok(logo.includes(`logo-md.webp ${md.width}w`) && logo.includes(`logo-lg.webp ${lg.width}w`), 'the srcset should list the real widths');
+  assert.ok(logo.includes("'/branding/logo'"),'app logo must be fetched from the backend');
 });
 
 test('the header is tall enough for the logo with a little room above and below', () => {

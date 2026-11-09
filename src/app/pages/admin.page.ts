@@ -27,7 +27,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
     <a routerLink="/" class="admin-login-back" aria-label="Back to home">
       <app-icon name="arrow-left" [size]="18"/><span>Back to Home</span>
     </a>
-    <div class="admin-login-icon" aria-hidden="true"><img src="/assets/images/brand/icon-120.webp" alt="" width="60" height="60"/></div>
+    <div class="admin-login-icon" aria-hidden="true"><img [src]="brandLogoUrl" alt="" width="60" height="60"/></div>
     <div class="eyebrow pink-text">OWNER'S SPACE</div>
     <h1>Welcome back!</h1>
     <p>Sign in to manage requests for The Genesis Kiddies Corner.</p>
@@ -282,7 +282,7 @@ export class AdminPage {
   private searchTimer:any=null; private bookingsRequest=0;
   calMonth=signal(todayIso().slice(0,7)); calItems=signal<Booking[]>([]); calSelected=signal<string|null>(null);
   selected=signal<Booking|null>(null);
-  apiUrl=environment.apiUrl; money=formatMoney; label=statusLabel;
+  apiUrl=environment.apiUrl; brandLogoUrl=environment.apiUrl.replace(/\/$/,'')+'/branding/logo'; money=formatMoney; label=statusLabel;
   title=computed(()=>TAB_TITLES[this.tab()]);
   /** Next events still to happen. Older API versions do not send this list, so work it out from the recent bookings. */
   upcoming=computed<Booking[]>(()=>{
