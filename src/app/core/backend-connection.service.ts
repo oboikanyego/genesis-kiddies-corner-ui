@@ -32,10 +32,10 @@ export class BackendConnectionService {
 
   /** All callers share the same connection attempt. Each HTTP request still runs independently after readiness. */
   ready(): Observable<void> {
-    if (this.activeRequest) return this.activeRequest;
     if (this.status() === 'offline') {
       return throwError(() => new Error('The booking service is currently unavailable. Please try connecting again.'));
     }
+    if (this.activeRequest) return this.activeRequest;
 
     this.changeStatus('connecting');
     this.indicatorVisible.set(false);
