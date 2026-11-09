@@ -13,6 +13,7 @@ import { IconComponent } from '../components/icon.component';
 import { LogoComponent } from '../components/logo.component';
 import { MonthCalendarComponent } from '../components/month-calendar.component';
 import { PhotoPipe } from '../components/photo.pipe';
+import { makeBlockedDateFilter } from '../core/blocked-date-filter';
 import { switchMap } from 'rxjs';
 import { prepareServicePhoto } from '../core/photo-upload';
 
@@ -333,14 +334,8 @@ export class AdminPage {
   };
 
   openBlockedDateCalendar(item: ServiceItem): void {
-    const today = this.todayIsoLocal();
-    const alreadyBlocked = new Set(item.blockedDates ?? []);
-    // Ionic's callback is evaluated for visible calendar days. Capture the current
-    // service's dates upfront so initial rendering never disables the entire month.
-    this.blockedDateFilter.set((date: string) => {
-      const day = date.slice(0, 10);
-      return day >= today && !alreadyBlocked.has(day);
-    });
+    // Ionic evaluates the callback when the calendar mounts; prepare it first.
+    this.blockedDateFilter.set(makeBlockedDateFilter(this.todayIsoLocal(), item.blockedDates ?? []));
     this.error.set('');
     this.activeBlockedService.set(item);
   }
