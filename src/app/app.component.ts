@@ -32,6 +32,12 @@ import { LogoComponent } from './components/logo.component';
         <footer class="site-footer"><div class="container footer-inner"><span>© {{year}} The Genesis Kiddies Corner</span><span class="footer-links"><a routerLink="/services">Services</a><a routerLink="/my-bookings">My Bookings</a><a routerLink="/admin">Admin</a></span></div></footer>
         </div>
       </div>
+      <nav class="mobile-nav" [class.admin-route-hidden]="isAdmin()" [class.flow-hidden]="isFlow()" aria-label="Mobile navigation">
+          <a routerLink="/" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="selected"><app-icon name="home" [size]="24"/>Home</a>
+          <a routerLink="/services" routerLinkActive="selected"><app-icon name="services" [size]="24"/>Services</a>
+          <a routerLink="/my-bookings" routerLinkActive="selected"><app-icon name="bookings" [size]="24"/>Bookings</a>
+          <a routerLink="/more" routerLinkActive="selected"><app-icon name="more" [size]="24"/>More @if (api.cart().length) { <i aria-hidden="true"></i> }</a>
+        </nav>
       @if (connection.indicatorVisible()) {
         <section class="backend-connection-status" [class.backend-offline]="connection.status()==='offline'" [attr.role]="connection.status()==='offline' ? 'alert' : 'status'" aria-live="polite" aria-atomic="true">
           @if (connection.status()==='offline') {
@@ -50,12 +56,6 @@ import { LogoComponent } from './components/logo.component';
           }
         </section>
       }
-      <nav class="mobile-nav" [class.admin-route-hidden]="isAdmin()" [class.flow-hidden]="isFlow()" aria-label="Mobile navigation">
-          <a routerLink="/" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="selected"><app-icon name="home" [size]="24"/>Home</a>
-          <a routerLink="/services" routerLinkActive="selected"><app-icon name="services" [size]="24"/>Services</a>
-          <a routerLink="/my-bookings" routerLinkActive="selected"><app-icon name="bookings" [size]="24"/>Bookings</a>
-          <a routerLink="/more" routerLinkActive="selected"><app-icon name="more" [size]="24"/>More @if (api.cart().length) { <i aria-hidden="true"></i> }</a>
-        </nav>
     </ion-app>
   `
 })
