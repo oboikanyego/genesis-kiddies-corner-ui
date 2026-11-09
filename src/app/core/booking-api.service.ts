@@ -37,7 +37,7 @@ export class BookingApiService {
   catalogOffline = signal(false);
   private brandVersion = signal(0);
   /** Public images are streamed from the client's MongoDB via Render, not Netlify or Cloudinary. */
-  brandLogoUrl(variant: 'md' | 'lg' | 'email' = 'md') { return `${this.url}/brand/logo/${variant}?v=${this.brandVersion()}`; }
+  brandLogoUrl() { return `${this.url}/branding/logo?v=${this.brandVersion()}`; }
   services$ = this.http.get<ServiceItem[]>(`${this.url}/services`).pipe(
     map(items => items.map(item => ({ ...item, image: servicePhotoFor(item) }))),
     tap(() => this.catalogOffline.set(false)),
@@ -148,7 +148,7 @@ export class BookingApiService {
   adminEmailStatus() { return this.http.get<{configured:boolean;recipientConfigured:boolean;sender:string;mode:string}>(`${this.url}/admin/email/status`,this.auth()); }
   /** Replacing the logo refreshes every on-screen instance without a redeploy. */
   adminUploadBrandLogo(logo: Blob) {
-    return this.http.put<{updated:boolean;message:string}>(`${this.url}/admin/brand/logo`, logo, {
+    return this.http.put<{updated:boolean;message:string}>(`${this.url}/admin/branding/logo`, logo, {
       headers: this.auth().headers.set('Content-Type', 'image/png')
     }).pipe(tap(() => this.brandVersion.update(version => version + 1)));
   }
