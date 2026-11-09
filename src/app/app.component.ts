@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, ViewChild } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -77,6 +77,22 @@ export class AppComponent {
       this.scrollHost?.nativeElement.scrollTo(0, 0);
     });
   }
+
+  // A hidden tab or unfocused window is not polled; check on return instead.
+  @HostListener('document:visibilitychange')
+  onVisibilityChange(): void {
+    if (document.hidden) this.connection.noteAway();
+    else this.connection.onReturn();
+  }
+
+  @HostListener('window:blur')
+  onWindowBlur(): void { this.connection.noteAway(); }
+
+  @HostListener('window:focus')
+  onWindowFocus(): void { this.connection.onReturn(); }
+
+  @HostListener('window:pageshow')
+  onPageShow(): void { this.connection.onReturn(); }
 
   isAdmin(): boolean { return this.router.url.startsWith('/admin'); }
   /** Booking-flow screens have their own back / next buttons, so the bottom tab bar is hidden there (as in the design). */
