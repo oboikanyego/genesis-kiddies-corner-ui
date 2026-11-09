@@ -112,3 +112,12 @@ The Ionic/Angular UI now calls the backend's `GET /health` endpoint on first app
 A singleton connection service shares the startup request; an HTTP interceptor defers API operations while Render wakes. A compact, responsive status indicator appears only after 900ms (avoids a flicker for fast servers) with a friendly connection message. The website stays navigable. Health checks have bounded 30-second attempts plus two timed retries. If all attempts fail, the message changes to **Booking service unavailable** with a **Try again** button, so there is no infinite loader and booking calls aren't silently submitted.
 
 Service and occasion listings wait for readiness rather than reporting misleading offline/demo data during a normal cold start. After a successful manual retry, open listing pages automatically reload real MongoDB content. The existing `/health` endpoint is already provided by the API; no extra Render environment variable, timer-based ping service, or Render configuration is required. Cold starts on the free tier are still possible, but visitors can now see the progress clearly.
+
+
+#### Recheck after 15 minutes away or idle
+
+The warm-up feature also rechecks the active client's Render `/health` endpoint after **15 minutes** without successful backend contact. In addition, the app records when a customer switches tabs, minimizes the browser, or unfocuses the window. When they return after 15 minutes or longer, it runs the same single shared health check **before** new booking/admin API requests proceed, displaying the existing non-blocking connection indicator for slow wake-ups.
+
+The `visibilitychange`, `focus`, `blur`, and `pageshow` events work on returning to an existing tab (including history/back-forward restoration). The API interceptor also checks staleness on every backend request, covering a page left visible but unused for 15 minutes. Successful API responses reset the idle clock, so active customers do not trigger unnecessary warm-ups. Concurrent requests share one health check. No repeated background polling is used: browsers suspend hidden tabs, and keeping Render permanently active would consume free-tier resources. If the health check cannot connect, existing failure/retry messaging remains in effect.
+
+This reduces the chance of user actions hitting a sleeping instance; it cannot guarantee successful calls during real outages or network loss.
