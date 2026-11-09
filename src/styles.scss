@@ -918,3 +918,9 @@ ion-app > .site-scroll {
  .occasion-admin-actions .btn{width:100%}
  .occasion-admin-heading .btn{width:100%;min-height:46px}
 }
+
+/* Client-managed brand image controls inside owner settings. */
+.brand-settings-row{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-top:16px}
+.brand-settings-preview{display:grid;place-items:center;min-width:164px;min-height:144px;border:1px solid #ebe4f4;border-radius:18px;background:linear-gradient(135deg,#fff7fb,#f5f0ff)}
+.brand-settings-preview img{display:block;max-width:140px;max-height:120px;object-fit:contain}
+.brand-settings-row .panel-help{margin-top:10px;max-width:480px}
