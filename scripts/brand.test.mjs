@@ -43,7 +43,7 @@ test('the app manifest is valid and every icon it lists exists', () => {
 
 test('the logo component shows the supplied logo with a text alternative; the old drawn logo and its font are gone', () => {
   const logo = read('src/app/components/logo.component.ts');
-  assert.ok(logo.includes("environment.apiUrl.replace(/\\/$/,'')+'/branding/logo'"),'visible logo must load from API/MongoDB');
+  assert.ok(logo.includes('api.brandLogoUrl()'),'visible logo must load from MongoDB API');
   assert.ok(!logo.includes('srcset='),'logo source must not silently switch to static assets');
   assert.ok(logo.includes('alt="The Genesis Kiddies Corner"'));
   assert.ok(!logo.includes('<svg'));
