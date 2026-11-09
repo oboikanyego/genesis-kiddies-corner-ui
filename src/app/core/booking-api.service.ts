@@ -35,6 +35,9 @@ export class BookingApiService {
   /** Bookings made from this device, remembered for the "My Bookings" page. */
   saved = signal<SavedBooking[]>(readJson<SavedBooking[]>(SAVED_KEY, []).filter(s => s?.reference && s?.email));
   catalogOffline = signal(false);
+  private brandVersion = signal(0);
+  /** Public images are streamed from the client's MongoDB via Render, not Netlify or Cloudinary. */
+  brandLogoUrl(variant: 'md' | 'lg' | 'email' = 'md') { return `${this.url}/brand/logo/${variant}?v=${this.brandVersion()}`; }
   services$ = this.http.get<ServiceItem[]>(`${this.url}/services`).pipe(
     map(items => items.map(item => ({ ...item, image: servicePhotoFor(item) }))),
     tap(() => this.catalogOffline.set(false)),
@@ -143,6 +146,12 @@ export class BookingApiService {
   }
   /** Owner inbox only; no customer emails without a verified sender domain. */
   adminEmailStatus() { return this.http.get<{configured:boolean;recipientConfigured:boolean;sender:string;mode:string}>(`${this.url}/admin/email/status`,this.auth()); }
+  /** Replacing the logo refreshes every on-screen instance without a redeploy. */
+  adminUploadBrandLogo(logo: Blob) {
+    return this.http.put<{updated:boolean;message:string}>(`${this.url}/admin/brand/logo`, logo, {
+      headers: this.auth().headers.set('Content-Type', 'image/png')
+    }).pipe(tap(() => this.brandVersion.update(version => version + 1)));
+  }
   adminSendTestEmail() { return this.http.post<{sent:boolean;id:string}>(`${this.url}/admin/email/test`,{},this.auth()); }
   adminSettings() { return this.http.get<ContactDetails>(`${this.url}/admin/settings`, this.auth()); }
   adminSaveSettings(details: ContactDetails) { return this.http.put<ContactDetails>(`${this.url}/admin/settings`, details, this.auth()); }
