@@ -18,6 +18,7 @@ jobs:
       - run: npm run test:blocked-dates
       - run: npm run test:photos
       - run: npm run test:occasions
+      - run: npm run test:owner-email
       - run: npm run test:design
       - run: npm run test:format
       - run: npm run test:brand
