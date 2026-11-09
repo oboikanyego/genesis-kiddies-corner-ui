@@ -68,6 +68,14 @@ export class DetailPage {
     guestCount:[this.api.event().guestCount,[Validators.min(0),Validators.max(50000)]]
   });
   service$=this.api.services$.pipe(map(s=>s.find(x=>x.slug===this.route.snapshot.paramMap.get('slug'))));
+  constructor(){
+    this.api.occasions$.subscribe(occasions=>{
+      this.eventTypes=[...new Set([...occasions.map(o=>o.name),'Other'])];
+      if(!this.eventTypes.includes(this.form.controls.type.value)){
+        this.form.controls.type.setValue(this.eventTypes[0]||'Other');
+      }
+    });
+  }
   money=formatMoney;
   add(service: ServiceItem){
     const v=this.form.getRawValue();

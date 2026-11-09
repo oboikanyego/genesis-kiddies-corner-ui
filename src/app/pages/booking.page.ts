@@ -108,7 +108,15 @@ export class BookingPageComponent {
   });
   /** Spam protection: asked for when the page opens (which also wakes a sleeping API), sent back with the request. */
   private tokenInfo:Promise<FormTokenInfo|null>|null=null;
-  constructor(){if(this.api.cart().length)this.tokenInfo=this.requestToken();}
+  constructor(){
+    if(this.api.cart().length)this.tokenInfo=this.requestToken();
+    this.api.occasions$.subscribe(occasions=>{
+      this.eventTypes=[...new Set([...occasions.map(o=>o.name),'Other'])];
+      if(!this.eventTypes.includes(this.form.controls.type.value)){
+        this.form.controls.type.setValue(this.eventTypes[0]||'Other');
+      }
+    });
+  }
   get v(){return this.form.getRawValue();}
   label=computed(()=>this.busy()?'Submitting...':this.step()===1?'Next: Customer Details':this.step()===2?'Next: Review & Submit':'Submit Booking Request');
   bad(name:string):boolean{const c:AbstractControl|null=this.form.get(name);return !!c&&c.invalid&&(c.touched||c.dirty);}

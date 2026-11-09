@@ -44,7 +44,7 @@ test('the booking form has a hidden box that people, screen readers and the Tab 
 
 test('the booking page asks for a form token when it opens, sends it back, and retries with a fresh one once, never in a loop', () => {
   const page = read('app/pages/booking.page.ts');
-  has(page, ['constructor(){if(this.api.cart().length)this.tokenInfo=this.requestToken();}', 'this.api.bookingFormToken()', '...(token?{formToken:token}:{})', 'website:this.v.website',
+  has(page, ['if(this.api.cart().length)this.tokenInfo=this.requestToken();', 'this.api.bookingFormToken()', '...(token?{formToken:token}:{})', 'website:this.v.website',
     'if(mayRetry&&isRetryableTokenError(e)){this.tokenInfo=this.requestToken();return this.send(body,cart,false);}', 'bookingErrorMessage(e)']);
   assert.equal((page.match(/this\.send\(body,cart,/g) || []).length, 2, 'one first try and one retry');
   assert.ok(page.includes('if(this.busy())return;'), 'pressing Enter twice must not send two requests');

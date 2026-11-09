@@ -13,6 +13,7 @@ import { IconComponent } from '../components/icon.component';
 import { LogoComponent } from '../components/logo.component';
 import { MonthCalendarComponent } from '../components/month-calendar.component';
 import { PhotoPipe } from '../components/photo.pipe';
+import { OccasionManagerComponent } from '../components/occasion-manager.component';
 import { makeBlockedDateFilter } from '../core/blocked-date-filter';
 import { switchMap } from 'rxjs';
 import { prepareServicePhoto } from '../core/photo-upload';
@@ -20,7 +21,7 @@ import { prepareServicePhoto } from '../core/photo-upload';
 type AdminTab = 'dashboard' | 'bookings' | 'calendar' | 'services' | 'settings';
 const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings: 'Bookings', calendar: 'Calendar', services: 'Services', settings: 'Settings' };
 
-@Component({selector:'app-admin',standalone:true,imports:[FormsModule,DatePipe,RouterLink,IonicModule,IconComponent,LogoComponent,MonthCalendarComponent,PhotoPipe],template:`
+@Component({selector:'app-admin',standalone:true,imports:[FormsModule,DatePipe,RouterLink,IonicModule,IconComponent,LogoComponent,MonthCalendarComponent,PhotoPipe,OccasionManagerComponent],template:`
 @if(!loggedIn()){
 <div class="admin-login-wrap">
   <form class="surface-card admin-login" (ngSubmit)="login()" aria-label="Owner sign in">
@@ -131,6 +132,11 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
     }
 
     @if(tab()==='services'){
+      <div class="admin-catalog-tabs" role="group" aria-label="Manage services and occasions">
+        <button type="button" [class.active]="catalogView()==='items'" [attr.aria-pressed]="catalogView()==='items'" (click)="catalogView.set('items')">Bookable items</button>
+        <button type="button" [class.active]="catalogView()==='occasions'" [attr.aria-pressed]="catalogView()==='occasions'" (click)="catalogView.set('occasions')">Occasions we cater for</button>
+      </div>
+      @if(catalogView()==='items'){
     <div class="admin-services"><div class="admin-services-intro"><h2>Available services</h2><p>Control stock, pricing, availability and whether an item appears in the customer catalogue. Prices are optional.</p></div>
     @for(item of services();track item._id){<article class="panel manage-service"><div class="service-photo-editor">
       <img [src]="(previewPhoto(item) | photo:'sm')" [alt]="item.name" class="service-photo-preview"/>
@@ -171,6 +177,9 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
           </div>
         </ng-template>
       </ion-modal>
+      } @else {
+        <app-occasion-manager/>
+      }
     }
 
     @if(tab()==='settings'){
@@ -230,6 +239,7 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
 }`})
 export class AdminPage {
   api=inject(BookingApiService); loggedIn=signal(this.api.loggedIn()); tab=signal<AdminTab>('dashboard');
+  catalogView=signal<'items'|'occasions'>('items');
   email='';password='';error=signal('');message=signal('');busy=signal(false);menuOpen=signal(false);
   stats=signal<AdminStats|null>(null);
   /** Settings > Contact details: the four boxes, what is wrong with each (from the API), and the result of the last save. */

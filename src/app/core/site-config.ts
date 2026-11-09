@@ -37,3 +37,22 @@ export const SERVICE_EMOJI: Record<string, string> = {
   'popcorn-machine': '🍿',
   'candy-floss-machine': '🍭'
 };
+
+/** Offline fallback only. The live homepage and booking form now read occasions from MongoDB. */
+import type { OccasionItem, OccasionTheme } from './models';
+export const OCCASION_BACKGROUNDS: Record<OccasionTheme,string> = {
+  pink:'linear-gradient(135deg,#ffd1e6,#ffe9a8)',
+  blue:'linear-gradient(135deg,#c9e6ff,#d7ffe9)',
+  purple:'linear-gradient(135deg,#d9d4ff,#c6ecff)',
+  orange:'linear-gradient(135deg,#ffe2c2,#ffd1d1)',
+  mint:'linear-gradient(135deg,#d2f4e4,#e9e0ff)',
+  yellow:'linear-gradient(135deg,#fff1b5,#ffdcf0)'
+};
+export const DEFAULT_OCCASIONS:OccasionItem[]=OCCASIONS.map((occasion,index)=>({
+  _id:'default-'+index,
+  slug:['kiddies-parties','family-days','graduations','school-events','community-events','church-events'][index],
+  name:['Kiddies Party','Family Day','Graduation','School Event','Community Event','Church Event'][index],
+  label:occasion.label,emoji:occasion.emoji,
+  theme:(['pink','blue','purple','orange','pink','mint'] as OccasionTheme[])[index],
+  photo:occasion.photo||'', active:true,sortOrder:(index+1)*10
+}));
