@@ -1,4 +1,4 @@
-/** A fresh, service-specific Ionic calendar filter, created before the picker mounts. */
+/** Service-specific date availability: excludes past and already blocked days. */
 export function makeBlockedDateFilter(today: string, dates: readonly string[]): (isoDay: string) => boolean {
   const blocked = new Set(dates);
   return (isoDay: string): boolean => {
