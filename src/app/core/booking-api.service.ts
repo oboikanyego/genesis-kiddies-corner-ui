@@ -1,11 +1,12 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, catchError, map, of, tap } from 'rxjs';
+import { BehaviorSubject, catchError, filter, map, of, switchMap, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AdminStats, Booking, BookingPage, BookingRequest, BookingStatus, CartItem, ContactDetails, EventDraft, SavedBooking, ServiceItem, OccasionItem, OccasionInput } from './models';
 import { DEMO_SERVICES } from './demo-data';
 import { servicePhotoFor } from './service-photos';
 import { todayIso } from './format';
+import { BackendConnectionService } from './backend-connection.service';
 
 const CART_KEY = 'gkc_cart';
 const EVENT_KEY = 'gkc_event';
@@ -26,6 +27,7 @@ export function defaultEvent(): EventDraft {
 @Injectable({ providedIn: 'root' })
 export class BookingApiService {
   private http = inject(HttpClient);
+  private connection = inject(BackendConnectionService);
   private url = environment.apiUrl;
   private cartSubject = new BehaviorSubject<CartItem[]>(this.restoreCart());
   cart$ = this.cartSubject.asObservable();
@@ -38,14 +40,29 @@ export class BookingApiService {
   /** Change after a brand upload to invalidate the browser's five-minute image cache. */
   private brandVersion = signal(0);
   brandLogoUrl(): string { return `${this.url}/branding/logo?v=${this.brandVersion()}`; }
-  services$ = this.http.get<ServiceItem[]>(`${this.url}/services`).pipe(
-    map(items => items.map(item => ({ ...item, image: servicePhotoFor(item) }))),
-    tap(() => this.catalogOffline.set(false)),
-    catchError(() => { this.catalogOffline.set(true); return of(DEMO_SERVICES); })
+  /** A failed initial health check must not replace live content with demo items too early.
+   * When the owner presses Retry and Render comes back, these streams load real data again.
+   */
+  services$ = this.connection.status$.pipe(
+    filter(status => status === 'ready' || status === 'offline'),
+    switchMap(status => status === 'ready'
+      ? this.http.get<ServiceItem[]>(`${this.url}/services`).pipe(
+          map(items => items.map(item => ({ ...item, image: servicePhotoFor(item) }))),
+          tap(() => this.catalogOffline.set(false)),
+          catchError(() => { this.catalogOffline.set(true); return of(DEMO_SERVICES); })
+        )
+      : of(DEMO_SERVICES).pipe(tap(() => this.catalogOffline.set(true)))
+    )
   );
 
-  /** Fresh per subscription; admin changes are reflected after a customer reloads. */
-  occasions$=this.http.get<OccasionItem[]>(`${this.url}/occasions`).pipe(catchError(()=>of([] as OccasionItem[])));
+  /** Read occasions when the backend is ready and refresh after a successful reconnect. */
+  occasions$ = this.connection.status$.pipe(
+    filter(status => status === 'ready' || status === 'offline'),
+    switchMap(status => status === 'ready'
+      ? this.http.get<OccasionItem[]>(`${this.url}/occasions`).pipe(catchError(() => of([] as OccasionItem[])))
+      : of([] as OccasionItem[])
+    )
+  );
   adminOccasions(){return this.http.get<OccasionItem[]>(`${this.url}/admin/occasions`,this.auth());}
   adminCreateOccasion(occasion:OccasionInput){return this.http.post<OccasionItem>(`${this.url}/admin/occasions`,occasion,this.auth());}
   adminSaveOccasion(occasion:OccasionItem){const {_id,name,label,emoji,theme,photo,active,sortOrder}=occasion;return this.http.patch<OccasionItem>(`${this.url}/admin/occasions/${_id}`,{name,label,emoji,theme,photo,active,sortOrder},this.auth());}
