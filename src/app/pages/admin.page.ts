@@ -207,6 +207,17 @@ const TAB_TITLES: Record<AdminTab, string> = { dashboard: 'Dashboard', bookings:
           @if(contactStatus(); as st){<p class="notice contact-note" [class.success]="st.ok" [class.error]="!st.ok" [attr.role]="st.ok?'status':'alert'">{{st.text}}</p>}
         </form>
       </section>
+      <section class="panel settings-panel" aria-labelledby="owner-email-title">
+        <h2 id="owner-email-title">Booking email alerts</h2>
+        <p class="panel-help">Get a message in your personal inbox whenever a new booking arrives. Currently, only the business owner receives alerts. Customers are not emailed.</p>
+        @if(emailStatus(); as status){
+          <p class="owner-email-state" role="status"><strong>{{status.configured?'Ready to send':'Not configured'}}</strong> · {{status.mode==='test'?'Resend test sender':'Verified-domain sender'}}</p>
+          @if(!status.configured){<p class="panel-help">Add <code>RESEND_API_KEY</code> and <code>BOOKING_ALERT_TO_EMAIL</code> to your Render API service. Without a verified domain, the inbox must match your Resend account email.</p>}
+          <p class="panel-help">Sender: {{status.sender}}. API keys are configured on Render, never in this website.</p>
+          <button type="button" class="btn btn-outline" (click)="sendEmailTest()" [disabled]="!status.configured||emailTestBusy()">{{emailTestBusy()?'Sending test…':'Send test email'}}</button>
+        } @else {<p class="panel-help">Loading email configuration…</p>}
+        @if(emailTestResult();as result){<p class="notice" [class.success]="result.ok" [class.error]="!result.ok" role="status">{{result.text}}</p>}
+      </section>
       <section class="panel settings-panel">
         <h2>Your account</h2>
         <dl class="settings-list"><dt>Signed in as</dt><dd>{{adminEmail()||'Owner'}}</dd><dt>Session</dt><dd>You are signed out automatically after 8 hours.</dd><dt>Booking service</dt><dd>{{apiUrl}}</dd></dl>
@@ -254,6 +265,10 @@ export class AdminPage {
   contact:ContactDetails={...EMPTY_CONTACT};contactLoaded=signal(false);
   contactErrors=signal<Partial<Record<keyof ContactDetails,string>>>({});
   contactStatus=signal<{ok:boolean;text:string}|null>(null);
+  emailStatus=signal<{configured:boolean;recipientConfigured:boolean;sender:string;mode:string}|null>(null);
+  emailTestBusy=signal(false);
+  emailTestResult=signal<{ok:boolean;text:string}|null>(null);
+
   contactFields:{key:keyof ContactDetails;label:string;type:string;mode:string;placeholder:string;max:number;help?:string}[]=[
     {key:'phone',label:'Phone number',type:'tel',mode:'tel',placeholder:'e.g. 082 123 4567',max:25},
     {key:'whatsapp',label:'WhatsApp number',type:'tel',mode:'tel',placeholder:'e.g. 082 123 4567',max:25,help:'The Contact page links to a WhatsApp chat with this number.'},
@@ -400,8 +415,18 @@ export class AdminPage {
     return Number.isNaN(parsed.getTime()) ? date : parsed.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
   }
   loadContact(){
+    this.emailTestResult.set(null);
+    this.api.adminEmailStatus().subscribe({next:r=>this.emailStatus.set(r),error:()=>this.emailStatus.set({configured:false,recipientConfigured:false,sender:'Unknown',mode:'test'})});
     this.contactErrors.set({});this.contactStatus.set(null);
     this.api.adminSettings().subscribe({next:r=>{this.contact={...EMPTY_CONTACT,...r};this.contactLoaded.set(true);},error:e=>this.handleError(e)});
+  }
+  sendEmailTest(){
+    if(this.emailTestBusy()||!this.emailStatus()?.configured)return;
+    this.emailTestBusy.set(true);this.emailTestResult.set(null);
+    this.api.adminSendTestEmail().subscribe({
+      next:()=>{this.emailTestBusy.set(false);this.emailTestResult.set({ok:true,text:'Resend accepted the test email. Check the inbox associated with your Resend account.'});},
+      error:e=>{this.emailTestBusy.set(false);this.emailTestResult.set({ok:false,text:e?.error?.message||'Could not send test email. Check the Render email settings.'});}
+    });
   }
   saveContact(){
     if(!this.contactLoaded()||this.busy())return;
